@@ -1,0 +1,75 @@
+<Rule Name="Command and Control Outbound Communication on Commonly Used Port" Type="Normal" ID="5IIdQZG4BABDyrL4WgsOhgw==">
+  <Description>Adversaries may conduct Outbound C2 communications over a Commonly used port to bypass proxies and firewalls that have been improperly configured.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="5" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And3778247">
+          <Or Name="And11168677">
+            <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="generator" TableAlias="event1" />
+              <Resource URI="/All Rules/Real-time Rules/Threat Intelligence Platform/Botnet Activity/Command and Control Communication to a Suspicious Address" ID="5Tk8xWGsBABDbNlNcm6IiHQ==" />
+            </BasicCondition>
+            <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="generator" TableAlias="event1" />
+              <Resource URI="/All Rules/Real-time Rules/Threat Intelligence Platform/Botnet Activity/Command and Control Communication to a Suspicious Domain" ID="5Q-BluWsBABDAgZR2gZrZfw==" />
+            </BasicCondition>
+          </Or>
+          <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+            <Variable TableAlias="event1" Column="destinationPort" />
+            <Variable TableAlias="event1" />
+            <Variable TableAlias="event1" />
+            <Resource ID="Hwf1Lkm4BABDY2wYgACPrSQ==" URI="/All Active Lists/ArcSight Foundation/Common/commonly Used Ports" />
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="destinationHostName" />
+      <Variable TableAlias="event1" Column="sourceUserName" />
+      <Variable TableAlias="event1" Column="originator" />
+      <Variable TableAlias="event1" Column="requestClientApplication" />
+      <Variable TableAlias="event1" Column="sourceHostName" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="sourceAddress" />
+      <Variable TableAlias="event1" Column="requestUrl" />
+      <Variable TableAlias="event1" Column="sourceUserId" />
+      <Variable TableAlias="event1" Column="sourceNtDomain" />
+      <Variable TableAlias="event1" Column="customerResource" />
+      <Variable TableAlias="event1" Column="sourceZoneResource" />
+      <Variable TableAlias="event1" Column="destinationPort" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="originator" EventFieldValue="Destination" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="agentSeverity" EventFieldValue="High" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/Activities/C2" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Compromise" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6" EventFieldValue="T1071" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6Label" EventFieldValue="MITRE ID" />
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5IIdQZG4BABDyrL4WgsOhgw==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+  </DependentVariables>
+</Rule>

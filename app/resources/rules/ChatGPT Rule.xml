@@ -1,0 +1,59 @@
+<Rule Name="Suspicious Network Activity Detection" Type="Full" ID="suspicious_network_activity_detection">
+  <Description>This rule detects suspicious network activity based on predefined criteria.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="NetworkTraffic" Alias="network_traffic" AliasType="Positive"/>
+    </FromClause>
+    <WhereClause TimeWindowSize="5" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="network_traffic">
+        <And Name="AndNetworkActivity">
+          <!-- Check for high volume of traffic -->
+          <Or Name="OrHighVolumeTraffic">
+            <BasicCondition Operator="GT" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="bytesOut" TableAlias="network_traffic"/>
+              <Value>1000000</Value> <!-- Adjust the threshold based on your environment -->
+            </BasicCondition>
+            <And Name="AndMediumVolumeTraffic">
+              <BasicCondition Operator="GT" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="bytesOut" TableAlias="network_traffic"/>
+                <Value>500000</Value> <!-- Adjust the threshold based on your environment -->
+              </BasicCondition>
+              <BasicCondition Operator="LT" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="bytesOut" TableAlias="network_traffic"/>
+                <Value>1000000</Value> <!-- Adjust the threshold based on your environment -->
+              </BasicCondition>
+            </And>
+          </Or>
+          <!-- Check for unusual destination -->
+          <Not Name="NotSafeDestination">
+            <BasicCondition Operator="IN" JoinCondition="No" Negated="Yes" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="destinationIp" TableAlias="network_traffic"/>
+              <Value>KnownSafeIP1</Value>
+              <Value>KnownSafeIP2</Value>
+              <!-- Add more known safe IP addresses if necessary -->
+            </BasicCondition>
+          </Not>
+          <!-- Check for known malicious destination ports -->
+          <BasicCondition Operator="IN" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="destinationPort" TableAlias="network_traffic"/>
+            <Value>6667</Value>
+            <Value>31337</Value>
+            <!-- Add more known malicious ports if necessary -->
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+  </Query>
+  <Actions>
+    <Action Event="OnThresholdEvent">
+      <SendEmail>
+        <ActionParameter Name="ToAddress" Value="security@yourcompany.com"/>
+        <ActionParameter Name="Subject" Value="Suspicious Network Activity Detected"/>
+        <ActionParameter Name="Message" Value="The rule 'Suspicious Network Activity Detection' has detected suspicious network activity. Please investigate immediately."/>
+      </SendEmail>
+    </Action>
+  </Actions>
+  <DependentVariables>
+    <BaseIntrospector Name="com.arcsight.event.NetworkEvent"/>
+  </DependentVariables>
+</Rule>

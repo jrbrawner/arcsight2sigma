@@ -1,0 +1,158 @@
+<Rule Name="Command and Control Remote File Copy" Type="Normal" ID="5ROjN8G8BABDPbWZZhaFHaQ==">
+  <Description>This rule triggers when files may be copied from an external adversary-controlled system through the Command and Control channel to bring tools into the victim network or through alternate protocols with another tool such as FTP</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="1" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And23220937">
+          <BasicCondition Operator="InZone" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes">
+            <Variable TableAlias="event1" />
+            <Resource ID="2ePfaIfMAABCANf82kBzSBA==" URI="/All Filters/ArcSight Foundation/Common/Network Filters/Location Filters/Outbound Events" />
+          </BasicCondition>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="Yes" ListCompare="ANY">
+            <Variable Column="applicationProtocol" TableAlias="event1" />
+            <Value>sftp</Value>
+            <Value>scp</Value>
+            <Value>rsync</Value>
+            <Value>ftp</Value>
+            <Value>http</Value>
+            <Value>https</Value>
+          </BasicCondition>
+          <BasicCondition Operator="GT" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="KBytesOut" TableAlias="event1" />
+            <Value>10</Value>
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="dstAddressValue" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <BasicCondition Operator="NE" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="deviceEventCategory" TableAlias="event1" />
+            <Value>streaming</Value>
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="dstExceptionAddressEntry____0" TableAlias="event1" />
+            <Value>NULL</Value>
+          </BasicCondition>
+          <Or Name="Or1357125799">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="dstAddressIndicatorType1" />
+              <Variable TableAlias="event1" Column="suspiciousType" />
+              <Variable TableAlias="event1" />
+              <Resource ID="HDjuB+2oBABCWH9xKlH3YhA==" URI="/All Active Lists/ArcSight Foundation/Common/Suspicious Indicator Types" />
+            </BasicCondition>
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="dstAddressIndicatorType2" />
+              <Variable TableAlias="event1" Column="suspiciousType" />
+              <Variable TableAlias="event1" />
+              <Resource ID="HDjuB+2oBABCWH9xKlH3YhA==" URI="/All Active Lists/ArcSight Foundation/Common/Suspicious Indicator Types" />
+            </BasicCondition>
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="dstAddressIndicatorType3" />
+              <Variable TableAlias="event1" Column="suspiciousType" />
+              <Variable TableAlias="event1" />
+              <Resource ID="HDjuB+2oBABCWH9xKlH3YhA==" URI="/All Active Lists/ArcSight Foundation/Common/Suspicious Indicator Types" />
+            </BasicCondition>
+          </Or>
+          <Not Name="Not2069200460">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="destinationAddress" />
+              <Variable TableAlias="event1" Column="destinationZone" />
+              <Variable TableAlias="event1" Column="sourceAddress" />
+              <Variable TableAlias="event1" Column="sourceZone" />
+              <Variable TableAlias="event1" Column="ruleName_C2_Remote_File_Copy" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+            </BasicCondition>
+          </Not>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="destinationHostName" />
+      <Variable TableAlias="event1" Column="ruleName_C2_Remote_File_Copy" />
+      <Variable TableAlias="event1" Column="originator" />
+      <Variable TableAlias="event1" Column="sourceHostName" />
+      <Variable TableAlias="event1" Column="applicationProtocol" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="sourceAddress" />
+      <Variable TableAlias="event1" Column="requestUrl" />
+      <Variable TableAlias="event1" Column="destinationFqdn" />
+      <Variable TableAlias="event1" Column="customerResource" />
+      <Variable TableAlias="event1" Column="sourceZoneResource" />
+      <Variable TableAlias="event1" Column="destinationPort" />
+      <Variable TableAlias="event1" Column="bytesOut" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent" Enabled="true">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/C2" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Compromise" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6" EventFieldValue="T1105" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6Label" EventFieldValue="MITRE ID" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="originator" EventFieldValue="Destination" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="destinationAddress" />
+        <ActionParameter Name="Field" Value="destinationZone" />
+        <ActionParameter Name="Field" Value="sourceAddress" />
+        <ActionParameter Name="Field" Value="sourceZone" />
+        <ActionParameter Name="Field" Value="ruleName_C2_Remote_File_Copy" />
+        <ActionParameter Name="Field" Value="customer" />
+        <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5ROjN8G8BABDPbWZZhaFHaQ==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="concat" FieldName="ruleName_C2_Remote_File_Copy" FieldDisplayName="ruleName_C2_Remote_File_Copy">
+      <FunctionFieldValue Type="String"><![CDATA[Command and Control Remote File Copy]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstAddressValue" FieldDisplayName="dstAddressValue">
+      <FunctionFieldResource ID="TcVEPWGsBABDJ3AIN6VWqwQ==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstAddressValue" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstExceptionAddressEntry" FieldDisplayName="dstExceptionAddressEntry">
+      <FunctionFieldResource ID="TM08zWGsBABDdFxhOIoNMeQ==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstExceptionAddressEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="suspiciousType" FieldDisplayName="suspiciousType">
+      <FunctionFieldValue Type="String"><![CDATA[Botnet Activity]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstAddressIndicatorType1" FieldDisplayName="dstAddressIndicatorType1">
+      <FunctionFieldResource ID="TAXr7cWsBABCCsfBNGVzLzw==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstAddressIndicatorType1" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstAddressIndicatorType2" FieldDisplayName="dstAddressIndicatorType2">
+      <FunctionFieldResource ID="TMeMAcmsBABCC9HbYtX3rTw==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstAddressIndicatorType2" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstAddressIndicatorType3" FieldDisplayName="dstAddressIndicatorType3">
+      <FunctionFieldResource ID="TiFL0j2sBABCAoiZ9-2M39g==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstAddressIndicatorType3" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="KBytesOut" FieldDisplayName="KBytesOut">
+      <FunctionFieldResource ID="TJjISuToBABDSrYFAT6XaWw==" URI="/All Fields/ArcSight Foundation/Variables Library/Bytes/KBytesOut" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

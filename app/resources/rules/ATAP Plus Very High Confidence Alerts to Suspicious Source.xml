@@ -1,0 +1,156 @@
+<Rule Name="ATAP Plus Very High Confidence Alerts to Suspicious Source" Type="Normal" ID="57PALBIYBABD2fReYOWgt6w==">
+  <Description>This rule is triggered by outbound suspicious traffic with very high confidence.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And252246211">
+          <BasicCondition Operator="InZone" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes">
+            <Variable TableAlias="event1" />
+            <Resource ID="2ePfaIfMAABCANf82kBzSBA==" URI="/All Filters/ArcSight Activate/Core/Common/Network Filters/Location Filters/Outbound Events" />
+          </BasicCondition>
+          <Or Name="Or386821994">
+            <And Name="And139062448">
+              <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstSuspiciousAddressEntry____15" TableAlias="event1" />
+                <Value>CyberRes ArcSight</Value>
+              </BasicCondition>
+              <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstSuspiciousAddressEntry____19" TableAlias="event1" />
+                <Value>high</Value>
+              </BasicCondition>
+              <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstSuspiciousAddressEntry____0" TableAlias="event1" />
+                <Value>NOT NULL</Value>
+              </BasicCondition>
+              <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstSuspiciousAddressEntry____21" TableAlias="event1" />
+                <Value>NOT NULL</Value>
+              </BasicCondition>
+              <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstExceptionAddressEntry____0" TableAlias="event1" />
+                <Value>NULL</Value>
+              </BasicCondition>
+            </And>
+            <And Name="And1298413923">
+              <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstSuspiciousDomainEntry____15" TableAlias="event1" />
+                <Value>CyberRes ArcSight</Value>
+              </BasicCondition>
+              <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstSuspiciousDomainEntry____19" TableAlias="event1" />
+                <Value>high</Value>
+              </BasicCondition>
+              <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstSuspiciousDomainEntry____0" TableAlias="event1" />
+                <Value>NOT NULL</Value>
+              </BasicCondition>
+              <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="dstSuspiciousDomainEntry____21" TableAlias="event1" />
+                <Value>NOT NULL</Value>
+              </BasicCondition>
+            </And>
+            <And Name="And311226608">
+              <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="suspiciousUrlEntry____15" TableAlias="event1" />
+                <Value>CyberRes ArcSight</Value>
+              </BasicCondition>
+              <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="suspiciousUrlEntry____19" TableAlias="event1" />
+                <Value>high</Value>
+              </BasicCondition>
+              <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="suspiciousUrlEntry____0" TableAlias="event1" />
+                <Value>NOT NULL</Value>
+              </BasicCondition>
+              <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+                <Variable Column="suspiciousUrlEntry____21" TableAlias="event1" />
+                <Value>NOT NULL</Value>
+              </BasicCondition>
+            </And>
+          </Or>
+          <Not Name="Not1672499448">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="sourceAddress" />
+              <Variable TableAlias="event1" Column="sourceZone" />
+              <Variable TableAlias="event1" Column="ruleName_ATAPPlusVeryHighConfidenceAlertstoSuspiciousSource" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Resource ID="HdCMEJWsBABCkIhKvicQ8MA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Target Based Suppression" />
+            </BasicCondition>
+          </Not>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="sourceAddress" />
+      <Variable TableAlias="event1" Column="sourceZoneResource" />
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="destinationUserId" />
+      <Variable TableAlias="event1" Column="sourceUserId" />
+      <Variable TableAlias="event1" Column="requestUrl" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="destinationUserName" />
+      <Variable TableAlias="event1" Column="ruleName_ATAPPlusVeryHighConfidenceAlertstoSuspiciousSource" />
+      <Variable TableAlias="event1" Column="sourceHostName" />
+      <Variable TableAlias="event1" Column="destinationHostName" />
+      <Variable TableAlias="event1" Column="sourceUserName" />
+      <Variable TableAlias="event1" Column="customerResource" />
+      <Variable TableAlias="event1" Column="destinationPort" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="priority" EventFieldValue="10" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/Exploit" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Suspicious" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="originator" EventFieldValue="Destination" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="sourceAddress" />
+        <ActionParameter Name="Field" Value="sourceZone" />
+        <ActionParameter Name="Field" Value="ruleName_ATAPPlusVeryHighConfidenceAlertstoSuspiciousSource" />
+        <ActionParameter Name="Field" Value="customer" />
+        <Resource ID="HdCMEJWsBABCkIhKvicQ8MA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Target Based Suppression" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="57PALBIYBABD2fReYOWgt6w==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstSuspiciousAddressEntry" FieldDisplayName="dstSuspiciousAddressEntry">
+      <FunctionFieldResource ID="TMNg9TmsBABCLbxxTVRU1hw==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstSuspiciousAddressEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstSuspiciousDomainEntry" FieldDisplayName="dstSuspiciousDomainEntry">
+      <FunctionFieldResource ID="TxX3Xn2sBABDgpuIzNwozqg==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Domain/dstSuspiciousDomainEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="suspiciousUrlEntry" FieldDisplayName="suspiciousUrlEntry">
+      <FunctionFieldResource ID="T7JiffXgBABDki61vwSn+sg==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious URL/suspiciousUrlEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstExceptionAddressEntry" FieldDisplayName="dstExceptionAddressEntry">
+      <FunctionFieldResource ID="TM08zWGsBABDdFxhOIoNMeQ==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstExceptionAddressEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="ruleName_ATAPPlusVeryHighConfidenceAlertstoSuspiciousSource" FieldDisplayName="ruleName_ATAPPlusVeryHighConfidenceAlertstoSuspiciousSource">
+      <FunctionFieldValue Type="String"><![CDATA[ATAP Plus Very High Confidence Alerts to Suspicious Source]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

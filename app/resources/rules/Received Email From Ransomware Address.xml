@@ -1,0 +1,151 @@
+<Rule Name="Received Email From Ransomware Address" Type="Normal" ID="5cCmUim4BABDeZuAAWDXN5g==">
+  <Description>This rule triggered by email received from a ransomware address.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And1715929092">
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="sourceUserName" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="srcEmailValue" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <Or Name="Or3086981">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="srcEmailIndicatorType1" />
+              <Variable TableAlias="event1" Column="suspiciousType" />
+              <Variable TableAlias="event1" />
+              <Resource ID="HDjuB+2oBABCWH9xKlH3YhA==" URI="/All Active Lists/ArcSight Foundation/Common/Suspicious Indicator Types" />
+            </BasicCondition>
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="srcEmailIndicatorType2" />
+              <Variable TableAlias="event1" Column="suspiciousType" />
+              <Variable TableAlias="event1" />
+              <Resource ID="HDjuB+2oBABCWH9xKlH3YhA==" URI="/All Active Lists/ArcSight Foundation/Common/Suspicious Indicator Types" />
+            </BasicCondition>
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="srcEmailIndicatorType3" />
+              <Variable TableAlias="event1" Column="suspiciousType" />
+              <Variable TableAlias="event1" />
+              <Resource ID="HDjuB+2oBABCWH9xKlH3YhA==" URI="/All Active Lists/ArcSight Foundation/Common/Suspicious Indicator Types" />
+            </BasicCondition>
+          </Or>
+          <Not Name="Not1586765637">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="dc_srcUserName" />
+              <Variable TableAlias="event1" />
+              <Resource ID="HXqdLcWsBABCAI8lx0t4AUg==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/User Defined Reputation Data/Exception Email" />
+            </BasicCondition>
+          </Not>
+          <Not Name="Not2069200460">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="dc_srcUserName" />
+              <Variable TableAlias="event1" Column="ruleName_ReceivedSuspiciousEmailRansomwareAddress" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Resource ID="Hb+-mZ2sBABCA8ZQHhKiTHA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Username Based Suppression" />
+            </BasicCondition>
+          </Not>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="sourceAddress" />
+      <Variable TableAlias="event1" Column="dc_srcUserName" />
+      <Variable TableAlias="event1" Column="dc_dstHostName" />
+      <Variable TableAlias="event1" Column="dc_srcHostName" />
+      <Variable TableAlias="event1" Column="ruleName_ReceivedSuspiciousEmailRansomwareAddress" />
+      <Variable TableAlias="event1" Column="sourceZoneResource" />
+      <Variable TableAlias="event1" Column="dc_dstUserName" />
+      <Variable TableAlias="event1" Column="customerResource" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/Delivery" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Compromise" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="destinationHostName" EventFieldValue="$dc_dstHostName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="destinationUserName" EventFieldValue="$dc_dstUserName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6" EventFieldValue="T1566.002" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6Label" EventFieldValue="MITRE ID" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="sourceHostName" EventFieldValue="$dc_srcHostName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="sourceUserName" EventFieldValue="$dc_srcUserName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="dc_srcUserName" />
+        <ActionParameter Name="Field" Value="ruleName_ReceivedSuspiciousEmailRansomwareAddress" />
+        <ActionParameter Name="Field" Value="customer" />
+        <Resource ID="Hb+-mZ2sBABCA8ZQHhKiTHA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Username Based Suppression" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5BiPIkGsBABDuO2EbJyrQUQ==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_dstHostName" FieldDisplayName="dc_dstHostName">
+      <FunctionFieldResource ID="TqWNP99URTBCUw0agaqKo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_dstHostName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_srcHostName" FieldDisplayName="dc_srcHostName">
+      <FunctionFieldResource ID="TcMGP92UBDDCUt0agEtWo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_srcHostName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_srcUserName" FieldDisplayName="dc_srcUserName">
+      <FunctionFieldResource ID="TdWGP92UCABDUt0bgEqKo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_srcUserName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_dstUserName" FieldDisplayName="dc_dstUserName">
+      <FunctionFieldResource ID="TcZFY96UBABCUt0agEqKo9B==" URI="/All Fields/ArcSight Foundation/Common/dc_dstUserName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="suspiciousType" FieldDisplayName="suspiciousType">
+      <FunctionFieldValue Type="String"><![CDATA[Ransomware]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="srcEmailIndicatorType1" FieldDisplayName="srcEmailIndicatorType1">
+      <FunctionFieldResource ID="TqX65a24BABCJuRFP7PC5vQ==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Email/srcEmailIndicatorType1" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="srcEmailIndicatorType2" FieldDisplayName="srcEmailIndicatorType2">
+      <FunctionFieldResource ID="TK6G7a24BABCKHzO4wb0Naw==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Email/srcEmailIndicatorType2" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="srcEmailIndicatorType3" FieldDisplayName="srcEmailIndicatorType3">
+      <FunctionFieldResource ID="Tgh68a24BABCKf02kECWN0g==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Email/srcEmailIndicatorType3" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="srcEmailValue" FieldDisplayName="srcEmailValue">
+      <FunctionFieldResource ID="TnN-9o24BABC16I3GCLhjkw==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Email/srcEmailValue" />
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="ruleName_ReceivedSuspiciousEmailRansomwareAddress" FieldDisplayName="ruleName_ReceivedSuspiciousEmailRansomwareAddress">
+      <FunctionFieldValue Type="String"><![CDATA[Received Email From Ransomware Address: ]]></FunctionFieldValue>
+      <FunctionFieldVariableResource>
+        <FunctionFieldResource ID="TdWGP92UCABDUt0bgEqKo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_srcUserName" />
+      </FunctionFieldVariableResource>
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

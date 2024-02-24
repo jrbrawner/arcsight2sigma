@@ -1,0 +1,79 @@
+<Rule Name="Internal Destination Address Found in Suspicious Address List" Type="Normal" ID="5KDXvi2sBABDf-dJTt1VXKg==">
+  <Description>Destination address has category protect which means company internal address, and found in reputation list.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And195416901">
+          <BasicCondition Operator="InZone" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes">
+            <Variable TableAlias="event1" />
+            <Resource ID="29p3VIfMAABCAMP82kBzSBA==" URI="/All Filters/ArcSight Activate/Core/Common/Network Filters/Boundary Filters/Internal Target" />
+          </BasicCondition>
+          <BasicCondition Operator="StartsWith" JoinCondition="No" Negated="Yes" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="destinationZoneURI" TableAlias="event1" />
+            <Value>/All Zones/ArcSight System/Private Address Space Zones</Value>
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="dstSuspiciousAddressEntry____0" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="dstExceptionAddressEntry____0" TableAlias="event1" />
+            <Value>NULL</Value>
+          </BasicCondition>
+          <Not Name="Not1749290752">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="destinationAddress" />
+              <Variable TableAlias="event1" Column="destinationZone" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Variable TableAlias="event1" />
+              <Resource ID="HTVbhi2sBABCDEo2xz8PMqg==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/Internal Address Found in Reputation Data" />
+            </BasicCondition>
+          </Not>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="dc_dstHostName" />
+      <Variable TableAlias="event1" Column="customerResource" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Suspicious" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="destinationAddress" />
+        <ActionParameter Name="Field" Value="destinationZone" />
+        <ActionParameter Name="Field" Value="customer" />
+        <ActionParameter Name="Field" Value="dc_dstHostName" />
+        <Resource ID="HTVbhi2sBABCDEo2xz8PMqg==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/Internal Address Found in Reputation Data" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5KDXvi2sBABDf-dJTt1VXKg==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_dstHostName" FieldDisplayName="dc_dstHostName">
+      <FunctionFieldResource ID="TqWNP99URTBCUw0agaqKo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_dstHostName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstExceptionAddressEntry" FieldDisplayName="dstExceptionAddressEntry">
+      <FunctionFieldResource ID="TM08zWGsBABDdFxhOIoNMeQ==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstExceptionAddressEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstSuspiciousAddressEntry" FieldDisplayName="dstSuspiciousAddressEntry">
+      <FunctionFieldResource ID="TMNg9TmsBABCLbxxTVRU1hw==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Address/dstSuspiciousAddressEntry" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

@@ -1,0 +1,130 @@
+<Rule Name="Suspicious File Hash Activity in Host" Type="Normal" ID="5a4-LdmsBABCwiA1j0Gxd5g==">
+  <Description>This rule triggered by suspicious file hash in host.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And1715929092">
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="getHashValue" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <Or Name="Or1748740127">
+            <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="suspiciousFileHashEntry____0" TableAlias="event1" />
+              <Value>NOT NULL</Value>
+            </BasicCondition>
+            <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="additionalFileHashEntry____0" TableAlias="event1" />
+              <Value>NOT NULL</Value>
+            </BasicCondition>
+          </Or>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="exceptionFileHashEntry____0" TableAlias="event1" />
+            <Value>NULL</Value>
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="suspiciousFileHashEntry____21" TableAlias="event1" />
+            <Value>NULL</Value>
+          </BasicCondition>
+          <BasicCondition Operator="NE" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="suspiciousFileHashEntry____19" TableAlias="event1" />
+            <Value>high</Value>
+          </BasicCondition>
+          <Not Name="Not2069200460">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="attackerAddress" />
+              <Variable TableAlias="event1" Column="attackerZone" />
+              <Variable TableAlias="event1" Column="targetAddress" />
+              <Variable TableAlias="event1" Column="targetZone" />
+              <Variable TableAlias="event1" Column="ruleName_FileHashActivity" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+            </BasicCondition>
+          </Not>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="sourceAddress" />
+      <Variable TableAlias="event1" Column="sourceZoneResource" />
+      <Variable TableAlias="event1" Column="attackerZoneResource" />
+      <Variable TableAlias="event1" Column="ruleName_FileHashActivity" />
+      <Variable TableAlias="event1" Column="dc_dstHostName" />
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="targetZoneResource" />
+      <Variable TableAlias="event1" Column="getHashValue" />
+      <Variable TableAlias="event1" Column="attackerAddress" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="dc_srcHostName" />
+      <Variable TableAlias="event1" Column="targetAddress" />
+      <Variable TableAlias="event1" Column="customerResource" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/Exploit" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Compromise" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="destinationHostName" EventFieldValue="$dc_dstHostName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="sourceHostName" EventFieldValue="$dc_srcHostName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="fileHash" EventFieldValue="$getHashValue" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="attackerAddress" />
+        <ActionParameter Name="Field" Value="attackerZone" />
+        <ActionParameter Name="Field" Value="targetAddress" />
+        <ActionParameter Name="Field" Value="targetZone" />
+        <ActionParameter Name="Field" Value="ruleName_FileHashActivity" />
+        <ActionParameter Name="Field" Value="customer" />
+        <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5a4-LdmsBABCwiA1j0Gxd5g==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_dstHostName" FieldDisplayName="dc_dstHostName">
+      <FunctionFieldResource ID="TqWNP99URTBCUw0agaqKo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_dstHostName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_srcHostName" FieldDisplayName="dc_srcHostName">
+      <FunctionFieldResource ID="TcMGP92UBDDCUt0agEtWo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_srcHostName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="additionalFileHashEntry" FieldDisplayName="additionalFileHashEntry">
+      <FunctionFieldResource ID="TMIKCdmsBABCIp7aIi0tbGA==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Hash/additionalFileHashEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="exceptionFileHashEntry" FieldDisplayName="exceptionFileHashEntry">
+      <FunctionFieldResource ID="TA0SEdmsBABCIx+uHkAP76w==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Hash/exceptionFileHashEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="suspiciousFileHashEntry" FieldDisplayName="suspiciousFileHashEntry">
+      <FunctionFieldResource ID="THW1+dmsBABCISOsqxlUgkA==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Hash/suspiciousFileHashEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="getHashValue" FieldDisplayName="getHashValue">
+      <FunctionFieldResource ID="Tm4fnRGwBABCFDWY-sndTtw==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Hash/getHashValue" />
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="ruleName_FileHashActivity" FieldDisplayName="ruleName_FileHashActivity">
+      <FunctionFieldValue Type="String"><![CDATA[Suspicious File Hash Activity in Host]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

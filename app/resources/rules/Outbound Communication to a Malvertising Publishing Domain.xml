@@ -1,0 +1,131 @@
+<Rule Name="Outbound Communication to a Malvertising Publishing Domain" Type="Normal" ID="5rU7tnYgBABCtV8-POX3hSw==">
+  <Description>This rule triggered by outbound traffic to Malvertising Publishing Domain.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And1715929092">
+          <BasicCondition Operator="InZone" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes">
+            <Variable TableAlias="event1" />
+            <Resource ID="2ePfaIfMAABCANf82kBzSBA==" URI="/All Filters/ArcSight Activate/Core/Common/Network Filters/Location Filters/Outbound Events" />
+          </BasicCondition>
+          <BasicCondition Operator="InZone" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes">
+            <Variable TableAlias="event1" />
+            <Resource ID="20A9nSm0BABCCKdiUF+lZIQ==" URI="/All Filters/Personal/admin's Filters/Destination in Suspicious Domain" />
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="dstExceptionDomainEntry____0" TableAlias="event1" />
+            <Value>NULL</Value>
+          </BasicCondition>
+          <Or Name="Or1357125799">
+            <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="destinationPort" TableAlias="event1" />
+              <Value>80</Value>
+              <Value>443</Value>
+            </BasicCondition>
+            <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="requestUrlPort" TableAlias="event1" />
+              <Value>80</Value>
+              <Value>443</Value>
+            </BasicCondition>
+          </Or>
+          <BasicCondition Operator="Contains" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="dstDomainIndicatorType" TableAlias="event1" />
+            <Value>malvertising</Value>
+          </BasicCondition>
+          <Not Name="Not47113386">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="destinationAddress" />
+              <Variable TableAlias="event1" Column="destinationZone" />
+              <Variable TableAlias="event1" Column="sourceAddress" />
+              <Variable TableAlias="event1" Column="sourceZone" />
+              <Variable TableAlias="event1" Column="rule_PublishingSuspiciousDomain" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+            </BasicCondition>
+          </Not>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="sourceAddress" />
+      <Variable TableAlias="event1" Column="rule_PublishingSuspiciousDomain" />
+      <Variable TableAlias="event1" Column="sourceZoneResource" />
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="dc_dstHostName" />
+      <Variable TableAlias="event1" Column="requestUrl" />
+      <Variable TableAlias="event1" Column="sourcePort" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="destinationFqdn" />
+      <Variable TableAlias="event1" Column="dc_srcHostName" />
+      <Variable TableAlias="event1" Column="customerResource" />
+      <Variable TableAlias="event1" Column="destinationPort" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/Exploit" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Compromise" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6" EventFieldValue="T1583.008" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6Label" EventFieldValue="MITRE ID" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="destinationHostName" EventFieldValue="$dc_dstHostName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="sourceHostName" EventFieldValue="$dc_srcHostName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="originator" EventFieldValue="Destination" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="destinationAddress" />
+        <ActionParameter Name="Field" Value="destinationZone" />
+        <ActionParameter Name="Field" Value="sourceAddress" />
+        <ActionParameter Name="Field" Value="sourceZone" />
+        <ActionParameter Name="Field" Value="rule_PublishingSuspiciousDomain" />
+        <ActionParameter Name="Field" Value="customer" />
+        <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5rUh2nYgBABCr7OBqWEVSkA==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_dstHostName" FieldDisplayName="dc_dstHostName">
+      <FunctionFieldResource ID="TqWNP99URTBCUw0agaqKo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_dstHostName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_srcHostName" FieldDisplayName="dc_srcHostName">
+      <FunctionFieldResource ID="TcMGP92UBDDCUt0agEtWo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_srcHostName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstExceptionDomainEntry" FieldDisplayName="dstExceptionDomainEntry">
+      <FunctionFieldResource ID="TzMhAr2sBABCPTRELW87ieg==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Domain/dstExceptionDomainEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="rule_PublishingSuspiciousDomain" FieldDisplayName="rule_PublishingSuspiciousDomain">
+      <FunctionFieldValue Type="String"><![CDATA[Outbound Communication to Malvertising Publishing Domain]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dstDomainIndicatorType" FieldDisplayName="dstDomainIndicatorType">
+      <FunctionFieldResource ID="T6EoboGsBABCAj3OuBgKQKQ==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Domain/dstDomainIndicatorType" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

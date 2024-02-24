@@ -1,0 +1,78 @@
+<Rule Name="Add Additional URL To APT Tracking List" Type="Lightweight" ID="5O8PKPXkBABCUuU6NJMAGkA==">
+  <Description>This rule will add the additional URL to the APT Tracking list.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And21987407">
+          <BasicCondition Operator="InZone" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes">
+            <Variable TableAlias="event1" />
+            <Resource ID="2zpRiPHkBABCGKqrxJxbo2A==" URI="/All Filters/ArcSight Foundation/Threat Intelligence Platform/APT Tracking/APT TMP Tracking Events" />
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="getTMPAPTtrackingEventType" TableAlias="event1" />
+            <Variable Column="aptTrackingURLType" TableAlias="event1" />
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="getAdditionalList____0" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+  </Query>
+  <Actions>
+    <Action Event="OnEveryEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnEveryEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="getTMPAPTactiveListEntry____1" />
+        <ActionParameter Name="Field" Value="getTMPAPTactiveListEntry____2" />
+        <ActionParameter Name="Field" Value="getTMPAPTactiveListEntry____0" />
+        <ActionParameter Name="Field" Value="getTMPAPTactiveListEntry____3" />
+        <ActionParameter Name="Field" Value="getTMPAPTactiveListEntry____5" />
+        <ActionParameter Name="Field" Value="getTMPAPTactiveListEntry____6" />
+        <ActionParameter Name="Field" Value="getAdditionalList____1" />
+        <ActionParameter Name="Field" Value="getAdditionalList____6" />
+        <ActionParameter Name="Field" Value="getAdditionalList____7" />
+        <ActionParameter Name="Field" Value="getAdditionalList____8" />
+        <ActionParameter Name="Field" Value="getAdditionalList____9" />
+        <ActionParameter Name="Field" Value="getAdditionalList____10" />
+        <ActionParameter Name="Field" Value="getAdditionalList____11" />
+        <ActionParameter Name="Field" Value="getAdditionalList____12" />
+        <ActionParameter Name="Field" Value="getAdditionalList____13" />
+        <ActionParameter Name="Field" Value="getAdditionalList____14" />
+        <Resource ID="HYBSQp3gBABDSMwNGTTc-hQ==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/APT Tracking" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5O8PKPXkBABCUuU6NJMAGkA==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="eval_global_var" FieldName="getTMPAPTactiveListEntry" FieldDisplayName="TMP APT Tracking List Entry">
+      <FunctionFieldResource ID="TzcL2PHkBABCpWlU-ZdicZg==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Common/APT Tracking/_TMP Tracking/TMP APT Tracking List Entry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="getTMPAPTtrackingEventType" FieldDisplayName="TMP APT Tracking EventType">
+      <FunctionFieldResource ID="TsPqCPHkBABCO8owenFhCCg==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Common/APT Tracking/_TMP Tracking/TMP APT Tracking EventType" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="aptTrackingURLType" FieldDisplayName="URL TYPE">
+      <FunctionFieldResource ID="TVLRTPHkBABCDJMQIXdz7FA==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Constants/APT Tracking/URL TYPE" />
+    </DependentVariable>
+    <DependentVariable FunctionName="get_activelist_value" FieldName="getAdditionalList" FieldDisplayName="getAdditionalList">
+      <FunctionFieldSessionDVMapping>
+        <FunctionFieldResource ID="HVTMqcWsBABCiNvT-MsOvxQ==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/User Defined Reputation Data/Additional Suspicious URL" />
+        <FunctionFieldVariableResource>
+          <FunctionFieldResource ID="T6iSBPHkBABCOCg1-S9N+rg==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Common/APT Tracking/_TMP Tracking/TMP APT Tracking IndicatorValue" />
+        </FunctionFieldVariableResource>
+        <SessionListTimeSpec SessionListTimeValue="null" SessionListUseTimeField="false" />
+      </FunctionFieldSessionDVMapping>
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

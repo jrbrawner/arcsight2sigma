@@ -1,0 +1,55 @@
+<Rule Name="Track ATAP Connector Update Count" Type="Lightweight" ID="5zsIho4IBABCXRBJltWCeIA==">
+  <Description>This rule tracks ATAP connector update count, and write to an active list.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And1875298701">
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="deviceEventClassId" TableAlias="event1" />
+            <Value>agent:050</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="agentType" TableAlias="event1" />
+            <Value>model_mispapi</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+  </Query>
+  <Actions>
+    <Action Event="OnEveryEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnEveryEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="agentName" />
+        <ActionParameter Name="Field" Value="dayAndHour" />
+        <ActionParameter Name="Field" Value="updateCount" />
+        <Resource ID="HkKcno4IBABCXStt-R0oY4A==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/IoC Data Update by Hour" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables>
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="parse_timestamp" FieldName="dayAndHour" FieldDisplayName="dayAndHour">
+      <FunctionFieldVariable Column="managerReceiptTime" />
+      <FunctionFieldValue Type="String"><![CDATA[get_year_month_day_hh]]></FunctionFieldValue>
+    </DependentVariable>
+    <DependentVariable FunctionName="subtract" FieldName="DCN3Subtract2" FieldDisplayName="DCN3Subtract2">
+      <FunctionFieldVariable Column="deviceCustomNumber3" />
+      <FunctionFieldValue Type="Integer">2</FunctionFieldValue>
+    </DependentVariable>
+    <DependentVariable FunctionName="custom_condition_function" FieldName="updateCount" FieldDisplayName="updateCount">
+      <ZoneDefinition>'deviceCustomNumber3' GE 2</ZoneDefinition>
+      <FunctionFieldVariable Column="DCN3Subtract2" />
+      <FunctionFieldVariable Column="deviceCustomNumber3" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

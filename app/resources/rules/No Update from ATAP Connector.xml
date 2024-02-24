@@ -1,0 +1,44 @@
+<Rule Name="No Update from ATAP Connector" Type="Normal" ID="5AgYh5n8BABCmfKca5n5YfQ==">
+  <Description>This rule will be triggered if any entry expires from the Track ATAP Connector list, which means there is no update from connector for a certain time period (defined by active list TTL)</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And1762856472">
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="deviceEventClassId" TableAlias="event1" />
+            <Value>activelist:104</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="fileName" TableAlias="event1" />
+            <Value>Track ATAP Connector</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="message" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SendToNotifier AckRequired="Yes" NotificationMessage="">
+        <Resource URI="/All Destinations/SOC Operators/" ID="0bbcmOvMAABCAGkfFgoQ8IA==" />
+      </SendToNotifier>
+    </Action>
+  </Actions>
+  <DependentVariables>
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+  </DependentVariables>
+</Rule>
