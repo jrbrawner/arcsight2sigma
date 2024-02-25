@@ -68,6 +68,7 @@ def testing_conversion(rule: str = None):
         rule = rule.replace(" STARTSWITH ", " StartsWith ")
         rule = rule.replace(" ENDSWITH ", " EndsWith ")
         rule = rule.replace(" = ", " EQ ")
+        print(rule, "\n")
         converter = QueryParser(rule)
 
     test = Sigma2ES(converter.rule, converter.logical_operators)

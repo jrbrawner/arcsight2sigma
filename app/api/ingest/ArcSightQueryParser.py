@@ -289,7 +289,7 @@ class QueryParser:
     def p_expression_or(self, p: YaccProduction):
         'expression : expression OR_OP expression'
         logging.debug("OR")
-        #print(p[1], "\n", p[2], p[3], "\n")
+        print(p[1], "\n", p[2], p[3], "\n")
         if p[2] == "OR":
             self.logical_operators.append(p[2])
 
@@ -306,13 +306,19 @@ class QueryParser:
             detection = SigmaDetection(detection_items=[p[3]])
             p[1].append(detection)
             p[0] = p[1]
+        elif type(p[1]) == SigmaDetection and type(p[3]) == list:
+            p[3].insert(0, p[1])
+            p[0] = p[3]
         else:
-            print("OR", p[1], p[2], p[3], "\n")
+            print("OR", "\n")
+            pprint.pprint(p[1])
+            pprint.pprint(p[3])    
          
         
     def p_expression_and(self, p: YaccProduction):
         '''expression : expression AND_OP expression'''
         logging.debug("AND")
+        
         #print(p[1], "\n", p[2], p[3], "\n")
         if p[2] == "AND":
             self.logical_operators.append(p[2])
@@ -329,17 +335,27 @@ class QueryParser:
             detection = SigmaDetection(detection_items=[p[3]])
             p[1].append(p[3])
             p[0] = p[1]
-        elif type(p[1]) == SigmaDetectionItem and type(p[3]) == SigmaDetection:
-            #detection = SigmaDetection(detection_items=[p[1]])
-            #p[0] = [detection, p[3]]
-            p[3].detection_items.append(p[1])
-            p[0] = p[3]
 
+        #might mess up the order
+        elif type(p[1]) == SigmaDetectionItem and type(p[3]) == SigmaDetection:
+            p[3].detection_items.insert(0, p[1])
+            p[0] = p[3]
         elif type(p[1]) == list and type(p[3]) == SigmaDetection:
             p[0] = p[1].append(p[3])
-        else:
-            print("AND", p[1], p[2], p[3], "\n")
+
+        elif type(p[1]) == SigmaDetectionItem and p[3] == None:
+            detection = SigmaDetection(detection_items=[p[1]])
+            p[0] = detection
         
+        elif type(p[1]) == SigmaDetectionItem and type(p[3]) == list:
+            detection = SigmaDetection(detection_items=[p[1]])
+            p[3].insert(0, detection)
+            p[0] = p[3]
+        else:
+            #print("AND", p[1], p[2], p[3], "\n")
+            print("AND", "\n")
+            pprint.pprint(p[1])
+            pprint.pprint(p[3])        
     
     def p_expression_implicit(self, p: YaccProduction):
         '''expression : expression expression %prec IMPLICIT_OP'''
@@ -366,16 +382,17 @@ class QueryParser:
         '''expression : unary_expression'''
         logging.debug("EXPRSSION UNARY")
         p[0] = p[1]
-        #print(p[0])
         
     def p_grouping(self, p: YaccProduction):
         'unary_expression : LPAREN expression RPAREN'
         logging.debug("GROUPING")
         p[0] = p[2]
-        if isinstance(p[2], list):
+        
+        if isinstance(p[0], list):
             self.detections = p[2]
-        elif type(p[2]) == SigmaDetection:
-            self.detections.append(p[0])
+        elif type(p[0]) == SigmaDetection:
+            if p[0] not in self.detections:
+                self.detections.append(p[0])
         self.temp_detection_items.clear()
         self.logical_operators.pop()
 
@@ -528,6 +545,10 @@ class QueryParser:
             )
             detection.detection_items.append(new_detection_item)
             return detection
+        else:
+            new_detection = SigmaDetection(detection_items=[detection_item])
+            return [detection, new_detection]
+        
 
     def __detection_or_detection__(self, detection: SigmaDetection, detection1: SigmaDetection):
         
@@ -544,6 +565,7 @@ class QueryParser:
 
         for k,v in temp.items():
             if len(v) > 1:
+                mods = []
                 mods += [x["modifiers"] for x in v if len(x["modifiers"]) > 0]
             else:
                 mods = v[0]["modifiers"]
