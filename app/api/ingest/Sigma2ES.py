@@ -13,8 +13,9 @@ class Sigma2ES:
         self.__convert_to_lql()
 
         
-        #for x in self.converted_list: print(x)
-        #print(logical_operators)
+        for x in self.converted_list: print(x)
+        print(logical_operators)
+        
 
     def __convert_to_lql(self):
 

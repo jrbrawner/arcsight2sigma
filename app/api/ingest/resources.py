@@ -1,7 +1,6 @@
 from xml.etree import ElementTree as ET
-from typing import Optional
-import os
 from app.database import get_session
+import yaml
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
@@ -65,11 +64,17 @@ def testing_conversion(rule: str = None):
 
         converter = QueryParser(rule.logic.replace(" In ", " Contains "))
     else:
+        rule = rule.replace(" CONTAINS ", " Contains ")
+        rule = rule.replace(" STARTSWITH ", " StartsWith ")
+        rule = rule.replace(" ENDSWITH ", " EndsWith ")
+        rule = rule.replace(" = ", " EQ ")
         converter = QueryParser(rule)
 
-    #test = Sigma2ES(converter.rule, converter.logical_operators)
+    test = Sigma2ES(converter.rule, converter.logical_operators)
     #return PlainTextResponse(test.query)
-    return converter.rule.to_dict()
+    #return converter.rule.to_dict()
+    return PlainTextResponse(yaml.dump(converter.rule.to_dict()))
+    
 
 
     
