@@ -53,7 +53,7 @@ class BaseModel(SQLModel):
         try:
             result = SessionManager.session.exec(statement)
         except Exception as exc:  # pylint: disable=broad-except
-            LOGGER.error('Executing database statement failed.', exc_info=1)
+            LOGGER.error("Executing database statement failed.", exc_info=1)
             SessionManager.session.rollback()
             raise exc
         return result
