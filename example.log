@@ -1,8 +1,0 @@
-asyncio - DEBUG - Using selector: EpollSelector
-httpx - INFO - HTTP Request: GET http://testserver/ "HTTP/1.1 200 OK"
-root - DEBUG - QUOTING
-root - DEBUG - FIELD SEARCH
-root - DEBUG - EXPRSSION UNARY
-root - DEBUG - QUOTING
-root - DEBUG - FIELD SEARCH
-root - DEBUG - EXPRSSION UNARY

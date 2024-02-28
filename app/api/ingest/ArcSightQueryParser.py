@@ -53,7 +53,7 @@ class QueryParser:
         self.temp_detection: dict = {}
         self.logical_operators: list[str] = []
 
-        # self.lex_tokens(input_string)
+        #self.lex_tokens(input_string)
         self.parser.parse(input_string)
 
         self.__check_for_single_condition__()

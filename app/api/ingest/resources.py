@@ -66,14 +66,9 @@ def testing_conversion(rule: str = None):
 
         converter = QueryParser(rule.logic.replace(" In ", " Contains "))
     else:
-        rule = rule.replace(" CONTAINS ", " Contains ")
-        rule = rule.replace(" STARTSWITH ", " StartsWith ")
-        rule = rule.replace(" ENDSWITH ", " EndsWith ")
-        rule = rule.replace(" = ", " EQ ")
-        print(rule, "\n")
         converter = QueryParser(rule)
 
-    #test = Sigma2ES(converter.rule, converter.logical_operators)
+    test = Sigma2ES(converter.rule, converter.logical_operators)
     #return PlainTextResponse(test.query)
     #return converter.rule.to_dict()
     
