@@ -6,38 +6,30 @@ class Conditions2Sigma:
 
     def __init__(self, conditions: dict):
         self.conditions = conditions
+        self.temp : list = []
         self.recursive_iterate(self.conditions)
-
         
-
-    
-    def recursive_iterate(self, data):
+    def recursive_iterate(self, data, key=None):
         # Check if the data is a dictionary and contains one of the keys: AND, OR, NOT
         if isinstance(data, dict):
             if data.get("AND") is not None or data.get("OR") is not None or data.get("NOT") is not None:
+                if self.temp != []:
+                    print(key, self.temp)
+                self.temp.clear()
                 for key, value in data.items():
-                    print(f"KEY: {key}")  
-                    self.recursive_iterate(value)  
+                    # KEY - AND, OR, NOT
+                    #print(key)
+                    self.recursive_iterate(value, key)
             else:
-                print(data)
+                self.temp.append(data)
+                #print(key, self.temp)
                 
         # If the data is a list, iterate over each item in the list and process it
         elif isinstance(data, list):
             for item in data:
-                self.recursive_iterate(item)  # Recursively process each item
+                self.recursive_iterate(item, key)  # Recursively process each item
                 
         
-
-
-
-
-
-    def __check_for_single_condition__(self):
-
-            if len(self.temp_detection_items) >= 1:
-                detection = SigmaDetection(detection_items=self.temp_detection_items)
-                self.detections.append(detection)
-
     def __build_sigma_detection__(self):
 
         if len(self.detections) > 1:

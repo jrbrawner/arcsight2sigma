@@ -234,29 +234,25 @@ class QueryParser:
     def p_expression_or(self, p: YaccProduction):
         "expression : expression OR_OP expression"
         logging.debug("OR")
-        """
-        if p[1].get("OR") is not None:
-            p[1]["OR"].append(p[3])
-            p[0] = p[1]
-        else:
-            data = {}
-            data["OR"] = [p[1], p[3]]
-            p[0] = data
-        """
+        
         data = {}
         data["OR"] = [p[1], p[3]]
         p[0] = data
+        self.condition_data = p[0]
 
     def p_expression_and(self, p: YaccProduction):
         """expression : expression AND_OP expression"""
         logging.debug("AND")
+        
         data = {}
         data["AND"] = [p[1], p[3]]
         p[0] = data
+        self.condition_data = p[0]
         
     def p_expression_implicit(self, p: YaccProduction):
         """expression : expression expression %prec IMPLICIT_OP"""
         logging.debug("IMPLICIT")
+        
 
     def p_expression_not(self, p: YaccProduction):
         """unary_expression : NOT unary_expression"""
@@ -270,6 +266,8 @@ class QueryParser:
         """expression : unary_expression"""
         logging.debug("EXPRSSION UNARY")
         p[0] = p[1]
+        if self.condition_data == {}:
+            self.condition_data = p[0]
 
     def p_grouping(self, p: YaccProduction):
         "unary_expression : LPAREN expression RPAREN"
