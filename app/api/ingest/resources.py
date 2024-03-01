@@ -10,6 +10,7 @@ from app.api.ingest.models import ArcSightRuleXML
 from app.api.ingest.ArcSightXMLParser import ParseArcSightConditonsXML
 from app.api.ingest.Sigma2ES import Sigma2ES
 from app.api.ingest.QueryParser import QueryParser
+from app.api.ingest.Conditions2Sigma import Conditions2Sigma
 
 router = APIRouter(prefix="/arcsight", tags=["arcsight"])
 
@@ -68,8 +69,10 @@ def testing_conversion(rule: str = None):
     else:
         converter = QueryParser(rule)
 
-    test = Sigma2ES(converter.rule, converter.logical_operators)
+        converter1 = Conditions2Sigma(converter.condition_data)
+        return converter1.conditions
+    #test = Sigma2ES(converter.rule, converter.logical_operators)
     #return PlainTextResponse(test.query)
     #return converter.rule.to_dict()
     
-    return PlainTextResponse(yaml.dump(converter.rule.to_dict()))
+    #return PlainTextResponse(yaml.dump(converter.rule.to_dict()))

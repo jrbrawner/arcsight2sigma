@@ -63,3 +63,14 @@ def test_complex_rule():
     assert condition_4 == {'sourceProcessName|contains': [':\\Program Files\\', ':\\Program Files (x86)\\', ':\\WINDOWS\\system32\\', ':\\WINDOWS\\SysWOW64\\']}
     assert condition_5 == {'sourceProcessName|contains': ':\\ProgramData\\Microsoft\\Windows Defender\\', 'sourceProcessName|endswith': ['\\MpCopyAccelerator.exe', '\\MsMpEng.exe']}
     assert condition_6 == {'sourceProcessName|endswith': ['\\thor64.exe', '\\thor.exe']}
+
+def test_complex_rule_1():
+    input_data = r'(deviceEventCategory = "RoleManagement" AND (OperationName CONTAINS "Add") AND (OperationName CONTAINS "member to role") AND (TargetResources CONTAINS "7698a772-787b-4ac8-901f-60d6b08affd2" OR TargetResources CONTAINS "62e90394-69f5-4237-9190-012177145e10"))'
+
+    parser = QueryParser(input_data)
+
+    rule = parser.rule.to_dict()
+
+    condition_0 = rule.get("detection").get("condition-0")
+    condition_1 = rule.get("detection").get("condition-1")
+    

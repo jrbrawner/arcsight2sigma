@@ -44,17 +44,23 @@ class QueryParser:
         self.parser: LRParser = yacc.yacc(
             module=self, debug=False, outputdir=tempfile.gettempdir()
         )
+        self.input_string : str = input_string
 
         self.temp_detection_items: list[SigmaDetectionItem] = []
+        self.detections_stack : list[SigmaDetection|SigmaDetectionItem|list[SigmaDetection]] = []
         self.detections: list[SigmaDetection] = []
         self.detection: SigmaDetections
         self.rule: SigmaRule
+
+        self.debug = {}
 
         self.temp_detection: dict = {}
         self.logical_operators: list[str] = []
 
         #self.lex_tokens(input_string)
-        self.parser.parse(input_string)
+        self.__preprocess_input__()
+        print(self.input_string, "\n")
+        self.parse()
 
         self.__check_for_single_condition__()
         self.__build_sigma_detection__()
@@ -68,8 +74,14 @@ class QueryParser:
                 break
             print(tok)
 
-    def parse(self, input_string: str):
-        self.parser.parse(input_string, lexer=self.lexer)
+    def parse(self):
+        self.parser.parse(self.input_string, lexer=self.lexer)
+
+    def __preprocess_input__(self):
+        self.input_string = self.input_string.replace(" CONTAINS ", " Contains ")
+        self.input_string = self.input_string.replace(" STARTSWITH ", " StartsWith ")
+        self.input_string = self.input_string.replace(" ENDSWITH ", " EndsWith ")
+        self.input_string = self.input_string.replace(" = ", " EQ ")
 
     def __check_for_single_condition__(self):
 
@@ -79,6 +91,9 @@ class QueryParser:
 
     def __build_sigma_detection__(self):
 
+        if len(self.detections) > 1:
+            self.detections.pop()
+            
         temp = {}
         temp_names = []
         for idx, detection in enumerate(self.detections):
@@ -304,73 +319,76 @@ class QueryParser:
         #print(p[1], "\n", p[2], p[3], "\n")
         if p[2] == "OR":
             self.logical_operators.append(p[2])
-
         if type(p[1]) == SigmaDetectionItem and type(p[3]) == SigmaDetectionItem:
-            p[0] = self.__handle__detection_item_or_detection_item__(p[1], p[3])
+            p[0] = self.__detection_item_or_detection_item__(p[1], p[3])
+            self.detections_stack.append(p[0]) 
         elif type(p[1]) == SigmaDetection and type(p[3]) == SigmaDetectionItem:
             p[0] = self.__detection_or_detection_item__(p[1], p[3])
+            self.detections_stack.append(p[0])
         elif type(p[1]) == SigmaDetection and type(p[3]) == SigmaDetection:
-            p[0] = self.__detection_or_detection__(p[1], p[3])
+            #p[0] = self.__detection_or_detection__(p[1], p[3])
+            p[0] = [p[1], p[3]]
+            self.detections_stack.append(p[0])
         elif type(p[1]) == SigmaDetectionItem and type(p[3]) == SigmaDetection:
-            p[0] = self.__detection_item_or_detection__(p[1], p[3])
+            
+           # print(p[1], p[3], "\n")
 
-        elif type(p[1]) == list and type(p[3]) == SigmaDetectionItem:
-            detection = SigmaDetection(detection_items=[p[3]])
-            p[1].append(detection)
+            #p[0] = self.__detection_item_or_detection__(p[1], p[3])
+            detection = SigmaDetection(detection_items=[p[1]])
+            p[0] = [detection, p[3]]
+            self.detections_stack.append(p[0])
+        
+        elif type(p[1]) == list and type(p[3]) == SigmaDetection:
+            p[1].append(p[3])
             p[0] = p[1]
-        elif type(p[1]) == SigmaDetection and type(p[3]) == list:
-            p[3].insert(0, p[1])
-            p[0] = p[3]
+            self.detections_stack.append(p[0])
+
+
         else:
-            print("OR", "\n")
-            pprint.pprint(p[1])
-            pprint.pprint(p[3])
+            #print("OR", "\n")
+            #pprint.pprint(p[1])
+            #pprint.pprint(p[3])
+            pass
 
     def p_expression_and(self, p: YaccProduction):
         """expression : expression AND_OP expression"""
         logging.debug("AND")
-
-        # print(p[1], "\n", p[2], p[3], "\n")
-        if p[2] == "AND":
-            self.logical_operators.append(p[2])
-
+        #print(p[1], "\n", p[2], p[3], "\n")
         if type(p[1]) == SigmaDetectionItem and type(p[3]) == SigmaDetectionItem:
             detection = SigmaDetection(detection_items=[p[1], p[3]])
             p[0] = detection
-        elif type(p[1]) == SigmaDetection and type(p[3]) == SigmaDetectionItem:
-            p[1].detection_items.append(p[3])
-            p[0] = p[1]
-        elif type(p[1]) == SigmaDetection and type(p[3]) == SigmaDetection:
-            p[0] = [p[1], p[3]]
-        elif type(p[1]) == list and type(p[3]) == SigmaDetectionItem:
-            detection = SigmaDetection(detection_items=[p[3]])
-            p[1].append(p[3])
-            p[0] = p[1]
-
-        # might mess up the order
+            self.detections_stack.append(p[0])
         elif type(p[1]) == SigmaDetectionItem and type(p[3]) == SigmaDetection:
             p[3].detection_items.insert(0, p[1])
             p[0] = p[3]
+            self.detections_stack.append(p[0])
+        elif p[0] == None and type(p[3]) == list:
+            p[0] = p[3]
+            self.detections_stack.append(p[0])
+        elif type(p[1]) == SigmaDetection and type(p[3]) == SigmaDetection:
+            p[0] = [p[1], p[3]]
+            self.detections_stack.append(p[0])
+        elif type(p[1]) == SigmaDetection and type(p[3]) == SigmaDetectionItem:
+            p[1].detection_items.append(p[3])
+            p[0] = p[1]
+            self.detections_stack.append(p[0])
         elif type(p[1]) == list and type(p[3]) == SigmaDetection:
             p[0] = p[1].append(p[3])
-
-        elif type(p[1]) == SigmaDetectionItem and p[3] == None:
-            detection = SigmaDetection(detection_items=[p[1]])
-            p[0] = detection
-
-        elif type(p[1]) == SigmaDetectionItem and type(p[3]) == list:
-            detection = SigmaDetection(detection_items=[p[1]])
-            p[3].insert(0, detection)
-            p[0] = p[3]
+            self.detections_stack.append(p[0])
+        elif type(p[1]) == SigmaDetection and p[3] == None:
+            p[0] = p[1]
+            self.detections_stack.append(p[0])
+        
         else:
-            # print("AND", p[1], p[2], p[3], "\n")
-            print("AND", "\n")
-            pprint.pprint(p[1])
-            pprint.pprint(p[3])
-
+            #print("AND", "\n")
+            #pprint.pprint(p[1])
+            #pprint.pprint(p[3])
+            pass
+        
     def p_expression_implicit(self, p: YaccProduction):
         """expression : expression expression %prec IMPLICIT_OP"""
         logging.debug("IMPLICIT")
+
         if type(p[1]) == SigmaDetection and type(p[2]) == SigmaDetection:
             p[0] = [p[1], p[2]]
         elif type(p[1]) == list and type(p[2]) == SigmaDetection:
@@ -396,24 +414,19 @@ class QueryParser:
     def p_grouping(self, p: YaccProduction):
         "unary_expression : LPAREN expression RPAREN"
         logging.debug("GROUPING")
+        #maintain a stack, clear it when grouping comes around
+        #print(p[2])
+        while len(self.detections_stack) > 0:
+            #print("STARTING", "\n")
+            item = self.detections_stack.pop(0)
+            #print(item)
+            #print("DONE", "\n")
+
+
         p[0] = p[2]
-
-        if isinstance(p[0], list):
-            temp = []
-            for entry in p[0]:
-                if entry not in temp:
-                    temp.append(entry)
-
-            for entry in temp:
-                if entry not in self.detections:
-                    self.detections.append(entry)
-            #self.detections = p[2]
-        elif type(p[0]) == SigmaDetection:
-            if p[0] not in self.detections:
-                self.detections.append(p[0])
-        self.temp_detection_items.clear()
-        # self.logical_operators.pop()
-
+        
+        
+        
     def p_list(self, p: YaccProduction):
         """unary_expression : LBRACKET phrase_or_term RBRACKET"""
         logging.debug("ACTIVELIST")
@@ -501,12 +514,13 @@ class QueryParser:
 
         return mods
 
-    def __handle__detection_item_or_detection_item__(
+    def __detection_item_or_detection_item__(
         self, detection_item0: SigmaDetectionItem, detection_item1: SigmaDetectionItem
     ):
         
-        if detection_item0.modifiers == detection_item1.modifiers:
-            values = [detection_item0.value[0], detection_item1.value[0]]
+        if detection_item0.modifiers == detection_item1.modifiers and detection_item0.field == detection_item1.field:
+            values = [detection_item0.original_value[0], detection_item1.original_value[0]]
+            
             detection_item = SigmaDetectionItem(
                 field=detection_item0.field,
                 modifiers=detection_item0.modifiers,
@@ -518,7 +532,6 @@ class QueryParser:
             detection0 = SigmaDetection(detection_items=[detection_item0])
             detection1 = SigmaDetection(detection_items=[detection_item1])
             return [detection0, detection1]
-
 
     def __detection_item_or_detection__(
         self, detection_item: SigmaDetectionItem, detection: SigmaDetection
@@ -541,12 +554,11 @@ class QueryParser:
         if detection_item.field in [x.field for x in detection.detection_items]:
             for item in detection.detection_items:
                 if item.field == detection_item.field:
-                    
-                    for value in item.value:
+                    for value in item.original_value:
                         values.append(value)
                     remove.append(item)
 
-            values.insert(0, detection_item.value[0])
+            values.insert(0, detection_item.original_value[0])
             [detection.detection_items.remove(x) for x in remove]
             remove.clear()
             new_detection_item = SigmaDetectionItem(
@@ -567,6 +579,7 @@ class QueryParser:
                 if mod not in mods:
                     mods.append(mod)
         #make sure modifiers are the same
+        
         if detection_item.modifiers != mods:
             new_detection = SigmaDetection(detection_items=[detection_item])
             return [detection, new_detection]
@@ -578,11 +591,12 @@ class QueryParser:
 
             for item in detection.detection_items:
                 if item.field == detection_item.field:
-                    for value in item.value:
+                    for value in item.original_value:
                         values.append(value)
+                    
                     remove.append(item)
-
-            values.append(detection_item.value[0])
+            
+            values.append(detection_item.original_value[0])
     
             [detection.detection_items.remove(x) for x in remove]
             remove.clear()
@@ -606,14 +620,14 @@ class QueryParser:
 
         for detection in [detection, detection1]:
             for item in detection.detection_items:
-                for value in item.value:
+                for value in item.original_value:
                     if temp.get(item.field) == None:
                         temp[item.field] = [
-                            {"value": value.to_plain(), "modifiers": item.modifiers}
+                            {"value": value, "modifiers": item.modifiers}
                         ]
                     else:
                         temp[item.field].append(
-                            {"value": value.to_plain(), "modifiers": item.modifiers}
+                            {"value": value, "modifiers": item.modifiers}
                         )
 
         for k, v in temp.items():
