@@ -1,6 +1,6 @@
 import re
 import tempfile
-import copy
+from treelib import Tree, Node
 import pprint
 import ply.lex as lex
 import ply.yacc as yacc
@@ -30,6 +30,7 @@ class QueryParser:
         )
         self.input_string : str = input_string
 
+        self.condition_tree : Tree = Tree()
         self.condition_data = {}
 
         self.temp_detection: dict = {}
@@ -37,7 +38,7 @@ class QueryParser:
 
         #self.lex_tokens(input_string)
         self.__preprocess_input__()
-        print(self.input_string, "\n")
+        #print(self.input_string, "\n")
         self.parse()
 
     def lex_tokens(self, input_string: str):
@@ -235,31 +236,53 @@ class QueryParser:
         "expression : expression OR_OP expression"
         logging.debug("OR")
         
-        data = {}
-        data["OR"] = [p[1], p[3]]
-        p[0] = data
+
+        if p[1] is None and p[3] is not None:
+            print("OR WEIRD CONDITION")
+            p[0] = p[3]
+        if p[1] is not None and p[1].get("type") == "or":
+            p[1]["definitions"].append(p[3])
+            p[0] = p[1]
+        else:
+            data = {
+                "type" : "or",
+                "definitions" : [p[1], p[3]]
+            }
+            p[0] = data
         self.condition_data = p[0]
 
+    
     def p_expression_and(self, p: YaccProduction):
         """expression : expression AND_OP expression"""
         logging.debug("AND")
         
-        data = {}
-        data["AND"] = [p[1], p[3]]
-        p[0] = data
+        if p[1] is None and p[3] is not None:
+            print("AND WEIRD CONDITION")
+        if p[1] is not None and p[1].get("type") == "and":
+            p[1]["definitions"].append(p[3])
+            p[0] = p[1]
+        else:
+            data = {
+                "type" : "and",
+                "definitions" : [p[1], p[3]]
+            }
+            p[0] = data
         self.condition_data = p[0]
+
         
     def p_expression_implicit(self, p: YaccProduction):
         """expression : expression expression %prec IMPLICIT_OP"""
         logging.debug("IMPLICIT")
-        
+        print("IMPLICIT:", p[1], p[2])
 
     def p_expression_not(self, p: YaccProduction):
         """unary_expression : NOT unary_expression"""
         logging.debug("NOT")
         # need to fix this
-        data = {}
-        data["NOT"] = [p[2]]
+        data = {
+            "type" : "not",
+            "definitions" : [p[2]]
+        }
         p[0] = data
 
     def p_expression_unary(self, p: YaccProduction):
@@ -298,14 +321,14 @@ class QueryParser:
         # print("FIELD SEARCH: ", p[1], p[2], p[3])
 
         if len(p) == 5:
-            p[3] = p[3] + p[4]
+            p[3] += p[4]
 
         data = {
             "term" : p[1],
             "operator" : p[2],
             "value" : p[3]
         }
-
+        
         p[0] = data
         
 
