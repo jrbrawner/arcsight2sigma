@@ -1,0 +1,1 @@
+(deviceVendor = "Unix" AND (type = "PATH" AND name CONTAINS "/.") AND  NOT ((name CONTAINS "/.cache/") AND (name CONTAINS "/.config/") AND (name CONTAINS "/.pyenv/") AND (name CONTAINS "/.rustup/toolchains")))
