@@ -9,6 +9,7 @@ class Conditions2Sigma:
         print(self.conditions, "\n", "\n", "\n")
         
         self.condition_string = self.convert_json_to_string(self.conditions)
+        self.conditions_list : list[dict] = []
         self.operator_list : list[str] = []
 
         self.detections : list[SigmaDetection] = []
@@ -25,17 +26,22 @@ class Conditions2Sigma:
 
         else:
             for entry in self.conditions["definitions"]:
-                print(entry, "\n")
+                self.conditions_list.append(entry)
                 operator = self.conditions.get("type")
                 if entry.get("type") == "not":
                     operator += " not"
                 self.operator_list.append(operator)
 
             self.operator_list.pop(0)
-            print(self.operator_list)
-
+        
+        self.__parse_conditions(self.conditions_list)
+        self.__build_sigma_detection(self.conditions.get("definitions"), self.conditions.get("type"))
+        self.__build_sigma_detections()
+        self.__build_sigma_rule()
+        
         
 
+        
     def convert_json_to_string(self, data: dict):
 
         if data["type"] in ["and", "or"]:
@@ -75,6 +81,21 @@ class Conditions2Sigma:
                 flag = False
         return flag
     
+    def __parse_conditions(self, condition_list):
+        
+        if isinstance(condition_list, list):
+            for entry in condition_list:
+                if entry.get("definitions")[0].get("definitions") is None:
+                    self.__build_sigma_detection(entry.get("definitions"), entry.get("type"))
+                else:
+                    while len(entry.get("definitions")) > 0:
+                        item = entry.get("definitions").pop(0)
+                        self.__parse_conditions(item)
+        elif isinstance(condition_list, dict):
+            self.__build_sigma_detection(condition_list.get("definitions"), condition_list.get("type"))
+                    
+
+
 
     def __build_sigma_detection(self, condition_list: list[dict], operator: str):
 
@@ -101,7 +122,6 @@ class Conditions2Sigma:
 
         self.sigma_detections = SigmaDetections(temp, temp_conditions)
 
-
     def __build_sigma_rule(self):
 
         logsource = SigmaLogSource("TEST")
@@ -111,8 +131,6 @@ class Conditions2Sigma:
             logsource=logsource,
             detection=self.sigma_detections,
         )
-
-
 
     def __get_sigma_modifiers(self, operator:str):
 
