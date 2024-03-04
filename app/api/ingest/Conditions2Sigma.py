@@ -16,7 +16,6 @@ class Conditions2Sigma:
         self.sigma_detections : SigmaDetections
         self.rule : SigmaRule
 
-
         single_definition = self.__check_for_single_definition(self.conditions)
         
         if single_definition == True:
@@ -38,15 +37,13 @@ class Conditions2Sigma:
         self.__build_sigma_detection(self.conditions.get("definitions"), self.conditions.get("type"))
         self.__build_sigma_detections()
         self.__build_sigma_rule()
+        #print(self.operator_list)
         
-        
-
         
     def convert_json_to_string(self, data: dict):
 
         if data["type"] in ["and", "or"]:
             string = f" {data['type'].upper()} ".join([self.parse_condition(d) for d in data["definitions"]])
-            
             return string
         else:
             return self.parse_condition(data)
@@ -94,8 +91,6 @@ class Conditions2Sigma:
         elif isinstance(condition_list, dict):
             self.__build_sigma_detection(condition_list.get("definitions"), condition_list.get("type"))
                     
-
-
 
     def __build_sigma_detection(self, condition_list: list[dict], operator: str):
 

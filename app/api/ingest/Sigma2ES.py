@@ -13,8 +13,12 @@ class Sigma2ES:
 
         self.__convert_to_lql()
 
-        #for x in self.converted_list: print(x)
-        # print(logical_operators)
+        for idx, item in enumerate(self.converted_list): 
+            self.query += item
+            if idx + 1 < len(self.converted_list):
+                self.query += f" {logical_operators.pop(0).upper()} "
+
+        
 
     def __convert_to_lql(self):
 

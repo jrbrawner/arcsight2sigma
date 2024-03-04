@@ -1,0 +1,1 @@
+((fileName CONTAINS "\Microsoft\Protect\S-1-5-18\" OR fileName CONTAINS "\Microsoft\Protect\S-1-5-21-") AND  NOT (((((sourceProcessName CONTAINS ":\Program Files\" OR sourceProcessName CONTAINS ":\Program Files (x86)\" OR sourceProcessName CONTAINS ":\Windows\system32\" OR sourceProcessName CONTAINS ":\Windows\SysWOW64\"))))))

@@ -71,4 +71,6 @@ def testing_conversion(rule: str = None):
 
         converter1 = Conditions2Sigma(converter.condition_data)
         #return PlainTextResponse(converter1.condition_string)
+        query_builder = Sigma2ES(converter1.rule, converter1.operator_list)
+        return PlainTextResponse(query_builder.query)
         return converter1.rule.to_dict()
