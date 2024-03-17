@@ -1,0 +1,120 @@
+<Rule Name="ATAP Plus Very High Confidence Alerts with Suspicious File Hash" Type="Normal" ID="51Ij1CIYBABD53Nlxs1SR+w==">
+  <Description>This rule is triggered by an alert of suspicious file hash with very high confidence.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And1303828847">
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="suspiciousFileHashEntry____19" TableAlias="event1" />
+            <Value>high</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="suspiciousFileHashEntry____15" TableAlias="event1" />
+            <Value>CyberRes ArcSight</Value>
+          </BasicCondition>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="getHashValue" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <Or Name="Or1748740127">
+            <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="suspiciousFileHashEntry____0" TableAlias="event1" />
+              <Value>NOT NULL</Value>
+            </BasicCondition>
+            <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="exceptionFileHashEntry____0" TableAlias="event1" />
+              <Value>NULL</Value>
+            </BasicCondition>
+          </Or>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="suspiciousFileHashEntry____21" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <Not Name="Not2069200460">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="attackerAddress" />
+              <Variable TableAlias="event1" Column="attackerZone" />
+              <Variable TableAlias="event1" Column="targetAddress" />
+              <Variable TableAlias="event1" Column="targetZone" />
+              <Variable TableAlias="event1" Column="ruleName_ATAPPlusVeryHighConfidenceAlertswithSuspiciousFileHash" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+            </BasicCondition>
+          </Not>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="targetHostName" />
+      <Variable TableAlias="event1" Column="attackerZoneResource" />
+      <Variable TableAlias="event1" Column="categoryTechnique" />
+      <Variable TableAlias="event1" Column="targetZoneResource" />
+      <Variable TableAlias="event1" Column="deviceCustomString6Label" />
+      <Variable TableAlias="event1" Column="attackerAddress" />
+      <Variable TableAlias="event1" Column="targetUserName" />
+      <Variable TableAlias="event1" Column="attackerHostName" />
+      <Variable TableAlias="event1" Column="ruleName_ATAPPlusVeryHighConfidenceAlertswithSuspiciousFileHash" />
+      <Variable TableAlias="event1" Column="attackerUserName" />
+      <Variable TableAlias="event1" Column="attackerUserId" />
+      <Variable TableAlias="event1" Column="categoryBehavior" />
+      <Variable TableAlias="event1" Column="deviceCustomString6" />
+      <Variable TableAlias="event1" Column="targetAddress" />
+      <Variable TableAlias="event1" Column="categoryOutcome" />
+      <Variable TableAlias="event1" Column="customerResource" />
+      <Variable TableAlias="event1" Column="fileHash" />
+      <Variable TableAlias="event1" Column="categoryCustomFormatField" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="priority" EventFieldValue="10" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/Exploit" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Suspicious" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="attackerAddress" />
+        <ActionParameter Name="Field" Value="attackerZone" />
+        <ActionParameter Name="Field" Value="targetAddress" />
+        <ActionParameter Name="Field" Value="targetZone" />
+        <ActionParameter Name="Field" Value="ruleName_ATAPPlusVeryHighConfidenceAlertswithSuspiciousFileHash" />
+        <ActionParameter Name="Field" Value="customer" />
+        <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="51Ij1CIYBABD53Nlxs1SR+w==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="eval_global_var" FieldName="suspiciousFileHashEntry" FieldDisplayName="suspiciousFileHashEntry">
+      <FunctionFieldResource ID="THW1+dmsBABCISOsqxlUgkA==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Hash/suspiciousFileHashEntry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="getHashValue" FieldDisplayName="getHashValue">
+      <FunctionFieldResource ID="Tm4fnRGwBABCFDWY-sndTtw==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Hash/getHashValue" />
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="ruleName_ATAPPlusVeryHighConfidenceAlertswithSuspiciousFileHash" FieldDisplayName="ruleName_ATAPPlusVeryHighConfidenceAlertswithSuspiciousFileHash">
+      <FunctionFieldValue Type="String"><![CDATA[ATAP Plus Very High Confidence Alerts with Suspicious File Hash]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="exceptionFileHashEntry" FieldDisplayName="exceptionFileHashEntry">
+      <FunctionFieldResource ID="TA0SEdmsBABCIx+uHkAP76w==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Suspicious Hash/exceptionFileHashEntry" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

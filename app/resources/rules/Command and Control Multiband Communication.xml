@@ -1,0 +1,116 @@
+<Rule Name="Command and Control Multiband Communication" Type="Normal" ID="5bss7qXABABCLIBoa+1FGJg==">
+  <Description>Some adversaries may split communications between different protocols. There could be one protocol for inbound command and control and another for outbound data, allowing it to bypass certain firewall restrictions. The split could also be random to simply avoid data threshold alerts on any one communication. This rule is dependent on the rule “/All Rules/ArcSight Foundation/Threat Intelligence Platform/Botnet Activity/Inbound Suspicious Traffic”.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And1715929092">
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="applicationProtocol" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <BasicCondition Operator="InZone" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes">
+            <Variable TableAlias="event1" />
+            <Resource ID="2ePfaIfMAABCANf82kBzSBA==" URI="/All Filters/ArcSight Activate/Core/Common/Network Filters/Location Filters/Outbound Events" />
+          </BasicCondition>
+          <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+            <Variable TableAlias="event1" Column="destinationAddress" />
+            <Variable TableAlias="event1" Column="destinationZone" />
+            <Variable TableAlias="event1" Column="sourceAddress" />
+            <Variable TableAlias="event1" Column="sourceZone" />
+            <Variable TableAlias="event1" Column="customer" />
+            <Variable TableAlias="event1" />
+            <Resource ID="H6lZW03ABABCAnuAhYUCK1Q==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/suspicious Protocol Tracking1" />
+          </BasicCondition>
+          <BasicCondition Operator="NE" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="suspicious_Protocol____5" TableAlias="event1" />
+            <Variable Column="applicationProtocol" TableAlias="event1" />
+          </BasicCondition>
+          <Not Name="Not2069200460">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="destinationAddress" />
+              <Variable TableAlias="event1" Column="destinationZone" />
+              <Variable TableAlias="event1" Column="sourceAddress" />
+              <Variable TableAlias="event1" Column="sourceZone" />
+              <Variable TableAlias="event1" Column="ruleName_C2C_MultibandCommunication" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+            </BasicCondition>
+          </Not>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="applicationProtocol" />
+      <Variable TableAlias="event1" Column="destinationHostName" />
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="sourceAddress" />
+      <Variable TableAlias="event1" Column="originator" />
+      <Variable TableAlias="event1" Column="ruleName_C2C_MultibandCommunication" />
+      <Variable TableAlias="event1" Column="requestUrl" />
+      <Variable TableAlias="event1" Column="sourceHostName" />
+      <Variable TableAlias="event1" Column="customerResource" />
+      <Variable TableAlias="event1" Column="sourceZoneResource" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="originator" EventFieldValue="Destination" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/Activities/C2" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Compromise" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6" EventFieldValue="T1071.001" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6Label" EventFieldValue="MITRE ID" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="destinationAddress" />
+        <ActionParameter Name="Field" Value="destinationZone" />
+        <ActionParameter Name="Field" Value="sourceAddress" />
+        <ActionParameter Name="Field" Value="sourceZone" />
+        <ActionParameter Name="Field" Value="ruleName_C2C_MultibandCommunication" />
+        <ActionParameter Name="Field" Value="customer" />
+        <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5bss7qXABABCLIBoa+1FGJg==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="concat" FieldName="ruleName_C2C_MultibandCommunication" FieldDisplayName="ruleName_C2C_MultibandCommunication">
+      <FunctionFieldValue Type="String"><![CDATA[Command and Control Multiband Communication]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+    <DependentVariable FunctionName="get_activelist_value" FieldName="suspicious_Protocol" FieldDisplayName="suspicious_Protocol">
+      <FunctionFieldSessionDVMapping>
+        <FunctionFieldResource ID="H6lZW03ABABCAnuAhYUCK1Q==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/Suspicious Protocol Tracking" />
+        <FunctionFieldVariable Column="targetAddress" />
+        <FunctionFieldVariable Column="targetZone" />
+        <FunctionFieldVariable Column="attackerAddress" />
+        <FunctionFieldVariable Column="attackerZone" />
+        <FunctionFieldVariable Column="customer" />
+        <SessionListTimeSpec SessionListTimeValue="null" SessionListUseTimeField="false" />
+      </FunctionFieldSessionDVMapping>
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

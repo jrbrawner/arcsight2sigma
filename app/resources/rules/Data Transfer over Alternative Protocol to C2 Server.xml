@@ -1,0 +1,122 @@
+<Rule Name="Data Transfer over Alternative Protocol to C2 Server" Type="Normal" ID="5YKpgtW8BABCEoGv5NwOA9g==">
+  <Description>This rule creates a correlation event when there is communication to a command and control server over alternative protocol.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="1" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And23220937">
+          <Or Name="Or21456148">
+            <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="generator" TableAlias="event1" />
+              <Resource URI="/All Rules/Real-time Rules/Threat Intelligence Platform/Botnet Activity/Command and Control Communication to a Suspicious Address" ID="5Tk8xWGsBABDbNlNcm6IiHQ==" />
+            </BasicCondition>
+            <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+              <Variable Column="generator" TableAlias="event1" />
+              <Resource URI="/All Rules/Real-time Rules/Threat Intelligence Platform/Botnet Activity/Command and Control Communication to a Suspicious Domain" ID="5Q-BluWsBABDAgZR2gZrZfw==" />
+            </BasicCondition>
+          </Or>
+          <BasicCondition Operator="Is" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="destinationPort" TableAlias="event1" />
+            <Value>NOT NULL</Value>
+          </BasicCondition>
+          <BasicCondition Operator="GT" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="MBytesOut" TableAlias="event1" />
+            <Value>9</Value>
+          </BasicCondition>
+          <Not Name="Not13048285">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="attackerPort" />
+              <Variable TableAlias="event1" />
+              <Variable TableAlias="event1" />
+              <Resource ID="Hwf1Lkm4BABDY2wYgACPrSQ==" URI="/All Active Lists/ArcSight Foundation/Common/Commonly Used Ports" />
+            </BasicCondition>
+          </Not>
+          <Not Name="Not2069200460">
+            <BasicCondition Operator="InActiveList" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes" ListCompare="ANY">
+              <Variable TableAlias="event1" Column="destinationAddress" />
+              <Variable TableAlias="event1" Column="destinationZone" />
+              <Variable TableAlias="event1" Column="sourceAddress" />
+              <Variable TableAlias="event1" Column="sourceZone" />
+              <Variable TableAlias="event1" Column="ruleName_DataTransferoverAlternativeProtocoltoC2Server" />
+              <Variable TableAlias="event1" Column="customer" />
+              <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+            </BasicCondition>
+          </Not>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="destinationAddress" />
+      <Variable TableAlias="event1" Column="sourcePort" />
+      <Variable TableAlias="event1" Column="dc_dstHostName" />
+      <Variable TableAlias="event1" Column="ruleName_DataTransferoverAlternativeProtocoltoC2Server" />
+      <Variable TableAlias="event1" Column="destinationZoneResource" />
+      <Variable TableAlias="event1" Column="sourceAddress" />
+      <Variable TableAlias="event1" Column="targetPort" />
+      <Variable TableAlias="event1" Column="targetAddress" />
+      <Variable TableAlias="event1" Column="dc_srcHostName" />
+      <Variable TableAlias="event1" Column="targetZoneResource" />
+      <Variable TableAlias="event1" Column="customerResource" />
+      <Variable TableAlias="event1" Column="sourceZoneResource" />
+      <Variable TableAlias="event1" Column="destinationPort" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent" Enabled="true">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/C2" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Compromise" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="destinationHostName" EventFieldValue="$dc_dstHostName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6" EventFieldValue="T1048" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString6Label" EventFieldValue="MITRE ID" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="sourceHostName" EventFieldValue="$dc_srcHostName" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="originator" EventFieldValue="Destination" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="destinationAddress" />
+        <ActionParameter Name="Field" Value="destinationZone" />
+        <ActionParameter Name="Field" Value="sourceAddress" />
+        <ActionParameter Name="Field" Value="sourceZone" />
+        <ActionParameter Name="Field" Value="ruleName_DataTransferoverAlternativeProtocoltoC2Server" />
+        <ActionParameter Name="Field" Value="customer" />
+        <Resource ID="H7hmfJGsBABCb1Q8yV0WVaA==" URI="/All Active Lists/ArcSight Foundation/Common/Suppression List/Attacker and Target Based Suppression" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5YKpgtW8BABCEoGv5NwOA9g==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="eval_global_var" FieldName="MBytesOut" FieldDisplayName="MBytesOut">
+      <FunctionFieldResource ID="TJjISuToBABDSroFAT6XaWw==" URI="/All Fields/ArcSight Foundation/Variables Library/Bytes/MBytesOut" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_srcHostName" FieldDisplayName="dc_srcHostName">
+      <FunctionFieldResource ID="TcMGP92UBDDCUt0agEtWo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_srcHostName" />
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="ruleName_DataTransferoverAlternativeProtocoltoC2Server" FieldDisplayName="ruleName_DataTransferoverAlternativeProtocoltoC2Server">
+      <FunctionFieldValue Type="String"><![CDATA[Data Transfer over Alternative Protocol to C2 Server]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="dc_dstHostName" FieldDisplayName="dc_dstHostName">
+      <FunctionFieldResource ID="TqWNP99URTBCUw0agaqKo9A==" URI="/All Fields/ArcSight Foundation/Common/dc_dstHostName" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

@@ -1,0 +1,112 @@
+<Rule Name="Possible 0-day Related Activity" Type="Normal" ID="5oBRWQnkBABDtH9+y0qJe4w==">
+  <Description>The rule will trigger when APT related indicators are added to the APT Tracking active list and the threat level is high (Sophisticate APT Malware or 0-day) and 0-day, 0day or zero day is the indicatorType.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" ConsumeEvent="No" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And1544862">
+          <BasicCondition Operator="InZone" JoinCondition="No" Negated="No" TableAlias="event1" IgnoreCase="Yes">
+            <Variable TableAlias="event1" />
+            <Resource ID="29uuVQXkBABCkAvsn3Q4JWw==" URI="/All Filters/ArcSight Foundation/Threat Intelligence Platform/APT Tracking/APT Tracking Events" />
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="getAPTtrackingActiveListEntry____7" TableAlias="event1" />
+            <Variable Column="HighThreatLevel" TableAlias="event1" />
+          </BasicCondition>
+          <BasicCondition Operator="GT" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="isZeroDay" TableAlias="event1" />
+            <Value>0</Value>
+          </BasicCondition>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="getAPTtrackingTgtAddress" />
+      <Variable TableAlias="event1" Column="targetAddress" />
+      <Variable TableAlias="event1" Column="getAPTtrackingIndicatorValue" />
+      <Variable TableAlias="event1" Column="attackerZoneResource" />
+      <Variable TableAlias="event1" Column="customer" />
+      <Variable TableAlias="event1" Column="attackerAddress" />
+      <Variable TableAlias="event1" Column="targetZoneResource" />
+      <Variable TableAlias="event1" Column="getAPTtrackingAtkAddress" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="message" EventFieldValue="$getAPTtrackingIndicatorValue" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="name" EventFieldValue="Critical! Possible 0-day Activity!" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="agentSeverity" EventFieldValue="Very-High" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryCustomFormatField" EventFieldValue="/Attack Life Cycle/Exploit" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categoryOutcome" EventFieldValue="/Attempt" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="categorySignificance" EventFieldValue="/Suspicious" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="destinationAddress" EventFieldValue="$getAPTtrackingTgtAddress" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="sourceAddress" EventFieldValue="$getAPTtrackingAtkAddress" />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="priority" EventFieldValue="10" />
+    </Action>
+  </Actions>
+  <DependentVariables OwnerResourceID="5oBRWQnkBABDtH9+y0qJe4w==">
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="convert_string_to_list" FieldName="getIndicatorTypes" FieldDisplayName="getIndicatorTypes">
+      <FunctionFieldVariableResource FunctionFieldVariableSubField="indicatorType">
+        <FunctionFieldResource ID="TYkZHQnkBABDrjadn23OJnA==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Common/APT Tracking/APT Tracking List Entry" />
+      </FunctionFieldVariableResource>
+      <FunctionFieldValue Type="String"><![CDATA[|]]></FunctionFieldValue>
+    </DependentVariable>
+    <DependentVariable FunctionName="concat" FieldName="zeroDayIndicatorTypes" FieldDisplayName="zeroDayIndicatorTypes">
+      <FunctionFieldValue Type="String"><![CDATA[0day,0-day,zero day]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+    <DependentVariable FunctionName="convert_string_to_list" FieldName="zeroDayIndicatorTypesToList" FieldDisplayName="zeroDayIndicatorTypesToList">
+      <FunctionFieldVariable Column="zeroDayIndicatorTypes" />
+      <FunctionFieldValue Type="String"><![CDATA[,]]></FunctionFieldValue>
+    </DependentVariable>
+    <DependentVariable FunctionName="list_intersection" FieldName="intersectZeroDayIndicatorTypes" FieldDisplayName="intersectZeroDayIndicatorTypes">
+      <FunctionFieldVariable Column="getIndicatorTypes" />
+      <FunctionFieldVariable Column="zeroDayIndicatorTypesToList" />
+    </DependentVariable>
+    <DependentVariable FunctionName="get_size_of_list" FieldName="isZeroDay" FieldDisplayName="isZeroDay">
+      <FunctionFieldVariable Column="intersectZeroDayIndicatorTypes" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="getAPTtrackingActiveListEntry" FieldDisplayName="APT Tracking List Entry">
+      <FunctionFieldResource ID="TYkZHQnkBABDrjadn23OJnA==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Common/APT Tracking/APT Tracking List Entry" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="HighThreatLevel" FieldDisplayName="HIGH THREAT">
+      <FunctionFieldResource ID="TsWyvfXgBABD18QvnGwZHwA==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Constants/Threat Level/HIGH THREAT" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="getAPTtrackingAtkAddress" FieldDisplayName="APT Tracking Attacker Address">
+      <FunctionFieldResource ID="T3II+QnkBABDpYVAPi5N8uA==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Common/APT Tracking/APT Tracking Attacker Address" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="getAPTtrackingIndicatorValue" FieldDisplayName="APT Tracking IndicatorValue">
+      <FunctionFieldResource ID="TLQBFQnkBABDq0bgzTbq7nQ==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Common/APT Tracking/APT Tracking IndicatorValue" />
+    </DependentVariable>
+    <DependentVariable FunctionName="eval_global_var" FieldName="getAPTtrackingTgtAddress" FieldDisplayName="APT Tracking Target Address">
+      <FunctionFieldResource ID="T2PFAQnkBABDqDPXDl0QC1g==" URI="/All Fields/ArcSight Foundation/Threat Intelligence Platform/Common/APT Tracking/APT Tracking Target Address" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

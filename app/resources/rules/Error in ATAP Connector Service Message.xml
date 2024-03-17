@@ -1,0 +1,52 @@
+<Rule Name="Error in ATAP Connector Service Message" Type="Normal" ID="5KgAh5n8BABCmdlVBP6BxEA==">
+  <Description>This rule is triggered when the ATAP Connector has an error to receive or process a malicious list.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And808196547">
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="name" TableAlias="event1" />
+            <Value>Service message</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="deviceProduct" TableAlias="event1" />
+            <Value>ArcSight Threat Acceleration Program</Value>
+          </BasicCondition>
+          <BasicCondition Operator="StartsWith" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="message" TableAlias="event1" />
+            <Value>Error</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+    <GroupByClause>
+      <Variable TableAlias="event1" Column="targetZoneResource" />
+      <Variable TableAlias="event1" Column="message" />
+      <Variable TableAlias="event1" Column="targetAddress" />
+      <Variable TableAlias="event1" Column="agentName" />
+    </GroupByClause>
+  </Query>
+  <Actions>
+    <Action Event="OnFirstEvent" Enabled="true">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SendToNotifier AckRequired="Yes" NotificationMessage="">
+        <Resource URI="/All Destinations/SOC Operators/" ID="0bbcmOvMAABCAGkfFgoQ8IA==" />
+      </SendToNotifier>
+    </Action>
+    <Action Event="OnFirstEvent">
+      <SetEventField EventFieldName="deviceCustomString4" EventFieldValue="$agentName" />
+    </Action>
+  </Actions>
+  <DependentVariables>
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+  </DependentVariables>
+</Rule>

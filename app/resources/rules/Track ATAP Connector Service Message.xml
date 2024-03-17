@@ -1,0 +1,48 @@
+<Rule Name="Track ATAP Connector Service Message" Type="Lightweight" ID="5lAwh5n8BABCmgOdDKz-J4Q==">
+  <Description>This rule tracks the ATAP Connector service message events, and adds to an active list.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And808196547">
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="name" TableAlias="event1" />
+            <Value>Service message</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="deviceProduct" TableAlias="event1" />
+            <Value>ArcSight Threat Acceleration Program</Value>
+          </BasicCondition>
+          <BasicCondition Operator="StartsWith" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="message" TableAlias="event1" />
+            <Value>Data</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+  </Query>
+  <Actions>
+    <Action Event="OnEveryEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="agentName" />
+        <Resource ID="H5p9g5n8BABCKVqdfTDkiFw==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/Track ATAP SmartConnector" />
+      </AddToList>
+    </Action>
+    <Action Event="OnEveryEvent">
+      <SendToConsole />
+    </Action>
+  </Actions>
+  <DependentVariables>
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="concat" FieldName="DataReceivedorProcessed" FieldDisplayName="DataReceivedorProcessed">
+      <FunctionFieldValue Type="String"><![CDATA[Data Received or Processed]]></FunctionFieldValue>
+      <FunctionFieldValue Type="String" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

@@ -1,0 +1,49 @@
+<Rule Name="Add Indicator Types" Type="Lightweight" ID="5FkASjGsBABCk4rsRRFwXUA==">
+  <Description>This rule adds indicator type to a list.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And712031847">
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="deviceEventClassId" TableAlias="event1" />
+            <Value>activelist:101</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="filePath" TableAlias="event1" />
+            <Value>/All Active Lists/ArcSight Foundation/Common/Suspicious Indicator Types</Value>
+          </BasicCondition>
+          <BasicCondition Operator="In" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+            <Value>Aggregated</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+  </Query>
+  <Actions>
+    <Action Event="OnEveryEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnEveryEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="indicatorType" />
+        <Resource ID="H9WwKjGsBABCkhnwL2msPlw==" URI="/All Active Lists/ArcSight Foundation/Common/Indicator Types" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables>
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="convert_string_to_list" FieldName="dcs4ToList" FieldDisplayName="dcs4ToList">
+      <FunctionFieldVariable Column="deviceCustomString4" />
+      <FunctionFieldValue Type="String"><![CDATA[|]]></FunctionFieldValue>
+    </DependentVariable>
+    <DependentVariable FunctionName="get_list_element" FieldName="indicatorType" FieldDisplayName="indicatorType">
+      <FunctionFieldVariable Column="dcs4ToList" />
+      <FunctionFieldValue Type="Integer">0</FunctionFieldValue>
+    </DependentVariable>
+  </DependentVariables>
+</Rule>

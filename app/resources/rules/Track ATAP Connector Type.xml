@@ -1,0 +1,51 @@
+<Rule Name="Track ATAP Connector Type" Type="Lightweight" ID="5CnChfYQBABCE99G+eYq5uw==">
+  <Description>This rule is triggered by event of connector type.</Description>
+  <Query>
+    <FromClause>
+      <Table Name="Event" Alias="event1" AliasType="Positive" />
+    </FromClause>
+    <WhereClause TimeWindowSize="2" TimeUnit="Minute" Threshold="1">
+      <Condition ConditionType="Positive" TableAlias="event1">
+        <And Name="And808196547">
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="name" TableAlias="event1" />
+            <Value>Service message</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="deviceProduct" TableAlias="event1" />
+            <Value>ArcSight Threat Acceleration Program</Value>
+          </BasicCondition>
+          <BasicCondition Operator="StartsWith" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="message" TableAlias="event1" />
+            <Value>CyberRes ATAP</Value>
+          </BasicCondition>
+          <BasicCondition Operator="EQ" JoinCondition="No" Negated="No" IgnoreCase="No" ListCompare="ANY">
+            <Variable Column="type" TableAlias="event1" />
+            <Value>Base</Value>
+          </BasicCondition>
+        </And>
+      </Condition>
+    </WhereClause>
+  </Query>
+  <Actions>
+    <Action Event="OnEveryEvent">
+      <SendToConsole />
+    </Action>
+    <Action Event="OnEveryEvent">
+      <AddToList>
+        <ActionParameter Name="Field" Value="agentName" />
+        <ActionParameter Name="Field" Value="message" />
+        <ActionParameter Name="Field" Value="newName" />
+        <Resource ID="H6+ySfoQBABCWmeB9dbtXtQ==" URI="/All Active Lists/ArcSight Foundation/Threat Intelligence Platform/Track ATAP Connector Type" />
+      </AddToList>
+    </Action>
+  </Actions>
+  <DependentVariables>
+    <BaseIntrospector Name="com.arcsight.event.SecurityEvent" />
+    <DependentVariable FunctionName="concat3" FieldName="newName" FieldDisplayName="newName">
+      <FunctionFieldVariable Column="agentName" />
+      <FunctionFieldValue Type="String"><![CDATA[ - ATAP ]]></FunctionFieldValue>
+      <FunctionFieldVariable Column="deviceCustomString1" />
+    </DependentVariable>
+  </DependentVariables>
+</Rule>
