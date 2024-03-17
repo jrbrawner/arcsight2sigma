@@ -1,5 +1,5 @@
 from sigma.rule import SigmaDetection, SigmaDetectionItem, SigmaLogSource, SigmaRule, SigmaDetections
-from sigma.modifiers import SigmaAllModifier, SigmaEndswithModifier, SigmaContainsModifier, SigmaStartswithModifier
+from sigma.modifiers import SigmaEndswithModifier, SigmaContainsModifier, SigmaStartswithModifier
 
 class Conditions2Sigma:
 
@@ -136,6 +136,10 @@ class Conditions2Sigma:
 
     def __process_conditions(self):
         
+
+        for x in self.condition_list.detection_items:
+            print(type(x), "\n")
+
         if type(self.condition_list) == SigmaDetection:
             self.sigma_detection_list.append(self.condition_list)
         elif type(self.condition_list) == SigmaDetectionItem:
