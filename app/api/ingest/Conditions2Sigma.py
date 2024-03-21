@@ -13,7 +13,7 @@ class Conditions2Sigma:
         self.rule : SigmaRule
 
         self.condition_list = self.convert_to_sigma_rule(self.conditions)
-
+        
         self.__process_conditions()
         self.__process_detections()
         self.__create_sigma_rule()
@@ -38,131 +38,90 @@ class Conditions2Sigma:
             return conditions
         else:
             return condition
+        
                 
-    def __process_or_conditions(self, condition_list):
-        terms = []
-        remove = []
-        for entry in condition_list:
-            if type(entry) == dict:
-                terms.append(entry)
-                remove.append(entry)
-
-        terms = list(set([x["term"] for x in terms]))
-        ## all dicts?
-        if len(terms) == 1:
-            values = [x["value"] for x in remove]
-            operators = list(set([x["operator"] for x in remove]))
-            if len(operators) > 1:
-                detections = []
-                for operator in operators:
-                    values = [x["value"] for x in remove if x["operator"] == operator]
-                    detection_item = SigmaDetectionItem(
-                        field=terms[0],
-                        modifiers=self.__get_modifiers(operator, values[0]),
-                        value=values
-                    )
-                    detections.append(detection_item)
-                [condition_list.remove(x) for x in remove]
-                
-                for idx, detection_item in enumerate(detections):
-                    detections[idx] = SigmaDetection(detection_items=[detection_item])
-
-                return detections
-            else:
-                detection_item = SigmaDetectionItem(
-                    field=terms[0],
-                    modifiers=self.__get_modifiers(operators[0], values[0]),
-                    value=values
-                )
-                [condition_list.remove(x) for x in remove]
-
-                if len(condition_list) > 0:
-                    condition_list.insert(0, detection_item)
-                    return condition_list
-                else:
-                    return detection_item
-
-        else:
-            #dicts and detection items
-            for idx, entry in enumerate(condition_list):
-                if type(entry) == dict:
-                    detection_item = SigmaDetectionItem(
-                        field=entry["term"],
-                        modifiers=self.__get_modifiers(entry["operator"], entry["value"]),
-                        value=entry["value"]
-                    )
-                    condition_list.insert(idx, detection_item)
-                    condition_list.remove(entry)
-            return condition_list
-
     def __process_and_conditions(self, condition_list):
 
-        if dict in [type(x) for x in condition_list] and list in [type(x) for x in condition_list]:
-            for idx, entry in enumerate(condition_list):
-                if type(entry) == dict:
-                    detection_item = SigmaDetectionItem(
-                        field=entry["term"],
-                        modifiers=self.__get_modifiers(entry["operator"], entry["value"]),
-                        value=entry["value"]
-                    )
-                    condition_list.insert(idx, detection_item)
-                    condition_list.remove(entry)
-
-            temp = []
-            [temp.append(x) for x in condition_list if type(x) == SigmaDetectionItem]
-            [condition_list.remove(x) for x in temp]
-            detection = SigmaDetection(detection_items=temp)
-            condition_list.insert(0, detection)
+        type_list = [type(x) for x in condition_list]
+        
+        if dict in type_list and list not in type_list and SigmaDetectionItem not in type_list:
+            condition_list = self.__and_dicts_only(condition_list)
             return condition_list
-            
-        elif dict in [type(x) for x in condition_list]:
-            for idx, entry in enumerate(condition_list):
-                if type(entry) == dict:
-                    detection_item = SigmaDetectionItem(
-                        field=entry["term"],
-                        modifiers=self.__get_modifiers(entry["operator"], entry["value"]),
-                        value=entry["value"]
-                    )
-                    condition_list.insert(idx, detection_item)
-                    condition_list.remove(entry)
-            detection = SigmaDetection(detection_items=condition_list)
-            
-            return detection
-        elif SigmaDetectionItem in [type(x) for x in condition_list] and dict not in [type(x) for x in condition_list]:
-            detection = SigmaDetection(detection_items=condition_list)
-            return detection
+        elif dict in type_list and SigmaDetectionItem in type_list:
+            condition_list = self.__and_dicts_and_sigma_detection_items(condition_list)
+            return condition_list
         else:
+            print("AND CONDITIONS: ", type_list)
             return condition_list
+
+    
+    def __process_or_conditions(self, condition_list):
+        type_list = [type(x) for x in condition_list]
+         
+        if dict in type_list and list not in type_list and SigmaDetectionItem not in type_list:
+            condition_list = self.__or_dicts_only(condition_list)
+            return condition_list
+        else:
+            print("OR CONDITIONS: ", type_list)
+            return condition_list
+        
+    
+    def __and_dicts_and_sigma_detection_items(self, condition_list: list[dict|SigmaDetectionItem]):
+        
+        for idx, condition in enumerate(condition_list):
+            if type(condition) == dict:
+                condition_list[idx] = self.__create_sigma_detection_item(condition)
+
+        return condition_list
+        
+    
+    def __and_dicts_only(self, condition_list: list[dict]):
+        
+        #print("AND_DICTS_ONLY")
+        for idx, condition in enumerate(condition_list):
+            condition_list[idx] = self.__create_sigma_detection_item(condition)
+        
+        detection = SigmaDetection(detection_items=condition_list)
+
+        return detection
+    
+    def __or_dicts_only(self, condition_list: list[dict]):
+
+        #print("OR_DICTS_ONLY")
+        terms = list(set([x["term"] for x in condition_list]))
+        operators = list(set([x["operator"] for x in condition_list]))
+        values = [x["value"] for x in condition_list]
+
+        if len(terms) > 1 or len(operators) > 1:
+            print("TERMS OR OPERATORS GREATER THAN 1")
+
+        detection_item = SigmaDetectionItem(
+            field=terms[0],
+            modifiers=self.__get_modifiers(operators[0], values[0]),
+            value=values
+        )
+        
+        return detection_item
+
 
     def __process_conditions(self):
+
+        type_list = [type(x) for x in self.condition_list]
+        print(type_list)
         
-
-        for x in self.condition_list.detection_items:
-            print(type(x), "\n")
-
-        if type(self.condition_list) == SigmaDetection:
-            self.sigma_detection_list.append(self.condition_list)
-        elif type(self.condition_list) == SigmaDetectionItem:
-            self.sigma_detection_list.append(SigmaDetection(detection_items=[self.condition_list]))
-        elif type(self.condition_list) == dict:
-            detection_item = SigmaDetectionItem(
-                field=self.condition_list["term"],
-                modifiers=self.__get_modifiers(self.condition_list["operator"], self.condition_list["value"]),
-                value=self.condition_list["value"]
-            )
-            self.sigma_detection_list.append(SigmaDetection(detection_items=[detection_item]))
+        if SigmaDetection in type_list and list not in type_list and SigmaDetectionItem not in type_list:
+            pass
+        elif SigmaDetectionItem in type_list:
+            self.condition_list = [SigmaDetection(detection_items=self.condition_list)]
         else:
-            for conditions in self.condition_list:
-                conditions = self.__innermost(conditions)
-                for condition in conditions:
-                    detection = SigmaDetection(detection_items=[condition])
-                    self.sigma_detection_list.append(detection)
+            print("PROCESS CONDITIONS: ", type_list)
+
 
     def __process_detections(self):
 
         detections = {}
         conditions_list = []
-        for idx, detection in enumerate(self.sigma_detection_list):
+        for idx, detection in enumerate(self.condition_list):
             name = f"condition-{idx}"
             detections[name] = detection
             conditions_list.append(name)
@@ -178,6 +137,17 @@ class Conditions2Sigma:
             logsource=logsource,
             detection=self.sigma_detections
         )
+
+
+    def __create_sigma_detection_item(self, condition: dict):
+
+        detection_item = SigmaDetectionItem(
+            field=condition["term"],
+            modifiers=self.__get_modifiers(condition["operator"], condition["value"]),
+            value=condition["value"]
+        )
+
+        return detection_item
 
     def __preprocess_list(self, condition_list):
 
