@@ -5,7 +5,7 @@ from sigma.collection import SigmaCollection
 
 class Sigma2ES:
 
-    def __init__(self, rule: SigmaRule, logical_operators: list[str]):
+    def __init__(self, rule: SigmaRule):
 
         self.rule = rule
         self.query = ""
@@ -13,10 +13,8 @@ class Sigma2ES:
 
         self.__convert_to_lql()
 
-        for idx, item in enumerate(self.converted_list): 
-            self.query += item
-            if idx + 1 < len(self.converted_list):
-                self.query += f" {logical_operators.pop(0).upper()} "
+        for i in self.converted_list:
+            print(i)
 
         
 

@@ -238,12 +238,15 @@ class Conditions2Sigma:
         for idx, condition in enumerate(self.condition_list):
             self.sigma_detection_list.append(condition)
         
-
     def __process_detections(self):
 
         detections = {}
         conditions_list = []
         for idx, detection in enumerate(self.sigma_detection_list):
+            
+            for item in detection.detection_items:
+                print(item, "\n")
+
             name = f"condition-{idx}"
             detections[name] = detection
             conditions_list.append(name)
