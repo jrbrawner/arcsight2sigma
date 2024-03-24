@@ -70,6 +70,7 @@ class QueryParser:
             "RPAREN",
             "LESSTHAN",
             "GREATERTHAN",
+            "FILTER"
         ]
         +
         # we sort to have a deterministic order, so that gammar signature does not changes
@@ -162,6 +163,10 @@ class QueryParser:
         # token_headtail(t, t.value)
         return None  # discard separators
 
+    def t_FILTER(self, t: LexToken):
+        r'MatchesFilter'
+        return t
+
     def t_OPERATOR(self, t: LexToken):
         r"(EQ|StartsWith|Contains|EndsWith|NE)"
         return t
@@ -248,7 +253,6 @@ class QueryParser:
             p[0] = data
         self.condition_data = p[0]
 
-    
     def p_expression_and(self, p: YaccProduction):
         """expression : expression AND_OP expression"""
         logging.debug("AND")
@@ -265,8 +269,7 @@ class QueryParser:
             }
             p[0] = data
         self.condition_data = p[0]
-
-        
+      
     def p_expression_implicit(self, p: YaccProduction):
         """expression : expression expression %prec IMPLICIT_OP"""
         logging.debug("IMPLICIT")
@@ -295,6 +298,145 @@ class QueryParser:
         p[0] = p[2]
 
         self.condition_data = p[0]
+    
+    def p_filter(self, p: YaccProduction):
+        "unary_expression : FILTER OPERATOR PHRASE"
+        p[0] = p[1] + p[2] + p[3]
+        p[0] = {
+  "type": "or",
+  "definitions": [
+    {
+      "type": "and",
+      "definitions": [
+        {
+          "term": "type",
+          "operator": "EQ",
+          "value": "\"PATH\""
+        },
+        {
+          "term": "name",
+          "operator": "EQ",
+          "value": "\"/etc/lsb-release\""
+        }
+      ]
+    },
+    {
+      "term": "name",
+      "operator": "EQ",
+      "value": "\"/etc/redhat-release\""
+    },
+    {
+      "term": "name",
+      "operator": "EQ",
+      "value": "\"/etc/issue\""
+    },
+    {
+      "type": "or",
+      "definitions": [
+        {
+          "type": "and",
+          "definitions": [
+            {
+              "term": "type",
+              "operator": "EQ",
+              "value": "\"EXECVE\""
+            },
+            {
+              "term": "a0",
+              "operator": "EQ",
+              "value": "\"uname\""
+            }
+          ]
+        },
+        {
+          "term": "a0",
+          "operator": "EQ",
+          "value": "\"uptime\""
+        },
+        {
+          "term": "a0",
+          "operator": "EQ",
+          "value": "\"lsmod\""
+        },
+        {
+          "term": "a0",
+          "operator": "EQ",
+          "value": "\"hostname\""
+        },
+        {
+          "term": "a0",
+          "operator": "EQ",
+          "value": "\"env\""
+        }
+      ]
+    },
+    {
+      "type": "and",
+      "definitions": [
+        {
+          "term": "type",
+          "operator": "EQ",
+          "value": "\"EXECVE\""
+        },
+        {
+          "term": "a0",
+          "operator": "EQ",
+          "value": "\"grep\""
+        },
+        {
+          "type": "or",
+          "definitions": [
+            {
+              "term": "a1",
+              "operator": "Contains",
+              "value": "\"vbox\""
+            },
+            {
+              "term": "a1",
+              "operator": "Contains",
+              "value": "\"vm\""
+            },
+            {
+              "term": "a1",
+              "operator": "Contains",
+              "value": "\"xen\""
+            },
+            {
+              "term": "a1",
+              "operator": "Contains",
+              "value": "\"virtio\""
+            },
+            {
+              "term": "a1",
+              "operator": "Contains",
+              "value": "\"hv\""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "and",
+      "definitions": [
+        {
+          "term": "type",
+          "operator": "EQ",
+          "value": "\"EXECVE\""
+        },
+        {
+          "term": "a0",
+          "operator": "EQ",
+          "value": "\"kmod\""
+        },
+        {
+          "term": "a1",
+          "operator": "EQ",
+          "value": "\"list\""
+        }
+      ]
+    }
+  ]
+}
 
     def p_lessthan(self, p: YaccProduction):
         """unary_expression : LESSTHAN phrase_or_term"""
