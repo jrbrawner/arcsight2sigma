@@ -1,0 +1,31 @@
+    condition1:
+        FileName|endswith: '\Appdata\Local\Microsoft\Windows\WebCache\WebCacheV01.dat'
+    condition2:
+        FileName|endswith:
+            - '\cookies.sqlite'
+            - 'release\key3.db'  # Firefox
+            - 'release\key4.db'  # Firefox
+            - 'release\logins.json' # Firefox
+    condition3:
+        FileName|contains:
+            - '\Appdata\Local\Chrome\User Data\Default\Login Data'
+            - '\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies'
+            - '\AppData\Local\Google\Chrome\User Data\Local State'
+    condition4:
+        Image: System
+    condition5:
+        # This filter is added to avoid large amount of FP with 3rd party software. You should remove this in favour of specific filter per-application
+        Image|contains:
+            - ':\Program Files\'
+            - ':\Program Files (x86)\'
+            - ':\WINDOWS\system32\'
+            - ':\WINDOWS\SysWOW64\'
+    condition6:
+        Image|contains: ':\ProgramData\Microsoft\Windows Defender\'
+        Image|endswith:
+            - '\MpCopyAccelerator.exe'
+            - '\MsMpEng.exe'
+    condition7:
+        Image|endswith:
+            - '\thor64.exe'
+            - '\thor.exe'

@@ -11,7 +11,7 @@ from app.api.ingest.ArcSightXMLParser import ParseArcSightConditonsXML
 from app.api.ingest.Sigma2ES import Sigma2ES
 from app.api.ingest.QueryParser import QueryParser
 from app.api.ingest.Conditions2Sigma import Conditions2Sigma
-from app.api.ingest.Conditions2SigmaYAML import SigmaYamlConverter
+from app.api.ingest.testingyaml import SigmaYamlConverter
 from sigma.rule import SigmaRule
 
 router = APIRouter(prefix="/arcsight", tags=["arcsight"])
@@ -80,13 +80,10 @@ def testing_yaml(rule: str = None):
 
     converter = QueryParser(rule)
     #return converter.condition_data
-    test = SigmaYamlConverter(converter.condition_data)
-    #test_rule = SigmaRule.from_yaml(yaml.dump(test.sigma_rule))
+    converter1 = SigmaYamlConverter(converter.condition_data)
 
-    #return "WIP"
-    return PlainTextResponse(yaml.dump(test.sigma_rule, sort_keys=False))
-    #query_builder = Sigma2ES(test_rule)
-    #return test_rule.to_dict()
+    
+    
     
     
 

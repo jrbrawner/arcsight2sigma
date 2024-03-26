@@ -199,10 +199,6 @@ class SigmaConditionHandler:
                 elif type(value) == list and type(detection.get(key)) == list:
                     detection.get(key).extend(detection.get(key))
                             
-
-
-
-
     def __get_detection_name(self):
 
         return f"condition-{len(self.detection.values())}"
