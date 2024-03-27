@@ -1,4 +1,5 @@
 import copy
+from treelib import Node, Tree
 
 class SigmaYamlConverter:
 
@@ -7,11 +8,17 @@ class SigmaYamlConverter:
         self.condition_data = condition_data
        
 
-        self.final_list : list[dict[str, list]|dict[str, dict]] = []
+        self.condition_list : list[dict[str,list]] = []
+        self.final_list : list[dict[str,list]] = []
+        self.sigma_condition_list: list = []
+
+        self.tree : Tree = Tree()
         
         self.convert_to_sigma_rule(self.condition_data)
+        self.__magic()
+        self.__dispatch_parsing()
 
-    
+        
                 
     def convert_to_sigma_rule(self, condition):
 
@@ -27,20 +34,34 @@ class SigmaYamlConverter:
         else:
             return condition
         
-        type_list = [type(x) for x in conditions]
-        print(conditions)
-        """
-        if type(None) in type_list and conditions != [None]:
-            count = 0
-            while type(None) in [type(x) for x in conditions]:
-                conditions.remove()
-        else:
-            self.final_list.append({key : conditions})
-        """
+        self.condition_list.append({key : conditions})
+        
+    def __magic(self):
 
-        #None -1 on the idx
+        
+        for idx, condition in enumerate(self.condition_list):
+            
+            key = list(condition.keys())[0]
+            entry = condition.get(key)
 
-
+            none_count = entry.count(None)
+            
+            while None in entry:
+                entry.remove(None)
+            if none_count > 0:
+                if self.condition_list[idx-none_count].get(key) is not None:
+                    #self.condition_list[idx-none_count].get(key).append(condition)
+                    self.condition_list[idx-none_count].get(key).append(condition.get(key))
+                else:
+                    self.condition_list[idx-none_count].update(condition)
+                self.condition_list.remove(condition)
+        
+        
+        for entry in self.condition_list:
+            key = list(entry.keys())[0]
+            if None in entry.get(key):
+                self.__magic()
+           
     def generate_sigma_rule(self):
         self.sigma_rule = {
             "title": "Generated Sigma Rule",
@@ -66,6 +87,14 @@ class SigmaYamlConverter:
         self.sigma_rule["detection"]["condition"] = temp
 
 
+    def __dispatch_parsing(self):
+
+        for entry in self.condition_list:
+            
+            keys = list(entry.keys())
+            
+            for key in keys:
+                print(key)
 
     
         
